@@ -9,6 +9,8 @@ import {
   deleteUser,
   changePassword,
   updateProfileWithImage,
+  getUserBalance,
+  updateUserBalance,
 } from "../controllers/userController";
 import {
   signupValidation,
@@ -40,12 +42,32 @@ router.get("/profile", protect, getProfile);
 // @route   PUT /api/users/profile
 // @desc    Update user profile with image upload
 // @access  Private
-router.put("/profile/:id", protect, uploadProfileImage.single("profileImage"), updateProfileWithImage);
+router.put(
+  "/profile/:id",
+  protect,
+  uploadProfileImage.single("profileImage"),
+  updateProfileWithImage
+);
 
 // @route   PUT /api/users/change-password
 // @desc    Change user password
 // @access  Private
-router.put("/change-password", protect, changePasswordValidation, changePassword);
+router.put(
+  "/change-password",
+  protect,
+  changePasswordValidation,
+  changePassword
+);
+
+// @route   GET /api/users/balance
+// @desc    Get logged-in user's balance
+// @access  Private
+router.get("/balance", protect, getUserBalance);
+
+// @route   PUT /api/users/balance/:id
+// @desc    Update user balance (deposit/withdraw) - Admin only
+// @access  Private (Admin only)
+router.put("/balance/:id", protect, updateUserBalance);
 
 // @route   GET /api/users
 // @desc    Get all users (with pagination and filtering)

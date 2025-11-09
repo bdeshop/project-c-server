@@ -28,11 +28,11 @@ const transactionSchema = new mongoose.Schema(
       enum: ["Pending", "Completed", "Failed", "Cancelled"],
       default: "Pending",
     },
-    // Optional fields for future expansion
+    // User who made the transaction
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: false,
+      required: true, // Now required!
     },
     transaction_type: {
       type: String,

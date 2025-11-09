@@ -1150,3 +1150,151 @@ export const changePassword = async (
     });
   }
 };
+
+// @desc    Get user balance
+// @route   GET /api/users/balance
+// @access  Private
+export const getUserBalance = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "Not authorized",
+      });
+      return;
+    }
+
+    const user = await User.findById(req.user.id).select(
+      "balance deposit withdraw"
+    );
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        balance: user.balance,
+        deposit: user.deposit,
+        withdraw: user.withdraw,
+        totalDeposit: user.deposit,
+        totalWithdraw: user.withdraw,
+        availableBalance: user.balance,
+      },
+    });
+  } catch (error: any) {
+    console.error("Get user balance error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+// @desc    Update user balance (Admin only - for deposit/withdraw)
+// @route   PUT /api/users/balance/:id
+// @access  Private (Admin only)
+export const updateUserBalance = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Check if user is admin
+    if (!req.user || req.user.role !== "admin") {
+      res.status(403).json({
+        success: false,
+        message: "Access denied. Admin only.",
+      });
+      return;
+    }
+
+    const { amount, type, description } = req.body;
+
+    // Validate input
+    if (!amount || typeof amount !== "number") {
+      res.status(400).json({
+        success: false,
+        message: "Valid amount is required",
+      });
+      return;
+    }
+
+    if (!type || !["deposit", "withdraw"].includes(type)) {
+      res.status(400).json({
+        success: false,
+        message: 'Type must be either "deposit" or "withdraw"',
+      });
+      return;
+    }
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    // Update balance based on type
+    if (type === "deposit") {
+      user.balance += amount;
+      user.deposit += amount;
+      console.log(
+        `💰 Deposit: Added ${amount} to ${user.email}. New balance: ${user.balance}`
+      );
+    } else if (type === "withdraw") {
+      // Check if user has sufficient balance
+      if (user.balance < amount) {
+        res.status(400).json({
+          success: false,
+          message: "Insufficient balance",
+          data: {
+            currentBalance: user.balance,
+            requestedAmount: amount,
+          },
+        });
+        return;
+      }
+      user.balance -= amount;
+      user.withdraw += amount;
+      console.log(
+        `💸 Withdraw: Deducted ${amount} from ${user.email}. New balance: ${user.balance}`
+      );
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: `${type === "deposit" ? "Deposit" : "Withdrawal"} successful`,
+      data: {
+        userId: user._id,
+        email: user.email,
+        type,
+        amount,
+        description: description || "",
+        balance: user.balance,
+        totalDeposit: user.deposit,
+        totalWithdraw: user.withdraw,
+      },
+    });
+  } catch (error: any) {
+    console.error("Update user balance error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};

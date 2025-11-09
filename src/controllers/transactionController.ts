@@ -78,7 +78,7 @@ export const getTransaction = async (
   try {
     const transaction = await Transaction.findById(req.params.id).populate(
       "user_id",
-      "username email"
+      "username email name balance"
     );
 
     if (!transaction) {
@@ -122,6 +122,35 @@ export const createTransaction = async (
       reference_number,
     } = req.body;
 
+    // Validate required fields
+    if (!user_id) {
+      res.status(400).json({
+        success: false,
+        message: "user_id is required to create a transaction",
+      });
+      return;
+    }
+
+    if (!amount || !wallet_provider || !transaction_id || !wallet_number) {
+      res.status(400).json({
+        success: false,
+        message:
+          "amount, wallet_provider, transaction_id, and wallet_number are required",
+      });
+      return;
+    }
+
+    // Verify user exists
+    const User = require("../models/User").default;
+    const user = await User.findById(user_id);
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found with the provided user_id",
+      });
+      return;
+    }
+
     // Check if transaction_id already exists
     const existingTransaction = await Transaction.findOne({ transaction_id });
     if (existingTransaction) {
@@ -137,15 +166,19 @@ export const createTransaction = async (
       wallet_provider,
       transaction_id,
       wallet_number,
-      status,
+      status: status || "Pending",
       user_id,
-      transaction_type,
+      transaction_type: transaction_type || "Deposit",
       description,
       reference_number,
     });
 
     // Populate user data in response
-    await transaction.populate("user_id", "username email");
+    await transaction.populate("user_id", "username email name balance");
+
+    console.log(
+      `✅ Transaction created: ${transaction.transaction_id} for user ${user.email}`
+    );
 
     res.status(201).json({
       success: true,
@@ -153,6 +186,7 @@ export const createTransaction = async (
       data: transaction,
     });
   } catch (error: any) {
+    console.error("Create transaction error:", error);
     res.status(400).json({
       success: false,
       message: "Failed to create transaction",
@@ -213,7 +247,7 @@ export const updateTransaction = async (
         new: true,
         runValidators: true,
       }
-    ).populate("user_id", "username email");
+    ).populate("user_id", "username email name balance");
 
     if (!transaction) {
       res.status(404).json({
@@ -287,11 +321,27 @@ export const updateTransactionStatus = async (
       return;
     }
 
+    // Get the transaction before updating to check previous status
+    const existingTransaction = await Transaction.findById(req.params.id);
+
+    if (!existingTransaction) {
+      res.status(404).json({
+        success: false,
+        message: "Transaction not found",
+      });
+      return;
+    }
+
+    // Check if status is changing to "Completed" and wasn't already completed
+    const isNewlyCompleted =
+      status === "Completed" && existingTransaction.status !== "Completed";
+
+    // Update transaction status
     const transaction = await Transaction.findByIdAndUpdate(
       req.params.id,
       { status },
       { new: true, runValidators: true }
-    ).populate("user_id", "username email");
+    ).populate("user_id", "username email balance");
 
     if (!transaction) {
       res.status(404).json({
@@ -301,9 +351,79 @@ export const updateTransactionStatus = async (
       return;
     }
 
+    // If transaction is completed and has a user, update their balance
+    console.log("🔍 Debug Info:", {
+      isNewlyCompleted,
+      hasUserId: !!transaction.user_id,
+      userId: transaction.user_id,
+      transactionType: transaction.transaction_type,
+      amount: transaction.amount,
+    });
+
+    if (isNewlyCompleted && transaction.user_id) {
+      const User = require("../models/User").default;
+      const user = await User.findById(transaction.user_id);
+
+      if (user) {
+        const amount = transaction.amount;
+
+        console.log(
+          `👤 Found user: ${user.email}, Current balance: ${user.balance}`
+        );
+
+        // Update balance based on transaction type
+        if (transaction.transaction_type === "Deposit") {
+          user.balance += amount;
+          user.deposit += amount;
+          console.log(
+            `💰 Auto-Deposit: Added ${amount} to ${user.email}. New balance: ${user.balance}`
+          );
+        } else if (transaction.transaction_type === "Withdrawal") {
+          // Check if user has sufficient balance
+          if (user.balance >= amount) {
+            user.balance -= amount;
+            user.withdraw += amount;
+            console.log(
+              `💸 Auto-Withdraw: Deducted ${amount} from ${user.email}. New balance: ${user.balance}`
+            );
+          } else {
+            res.status(400).json({
+              success: false,
+              message: "User has insufficient balance for withdrawal",
+              data: {
+                currentBalance: user.balance,
+                requestedAmount: amount,
+              },
+            });
+            return;
+          }
+        }
+
+        await user.save();
+
+        console.log(
+          `✅ Transaction ${transaction.transaction_id} completed and balance updated for ${user.email}`
+        );
+      } else {
+        console.log(`❌ User not found for ID: ${transaction.user_id}`);
+      }
+    } else {
+      console.log("⚠️ Balance not updated because:", {
+        isNewlyCompleted,
+        hasUserId: !!transaction.user_id,
+        reason: !isNewlyCompleted
+          ? "Transaction was already completed"
+          : "No user_id in transaction",
+      });
+    }
+
     res.status(200).json({
       success: true,
-      message: `Transaction status updated to ${status}`,
+      message: `Transaction status updated to ${status}${
+        isNewlyCompleted && transaction.user_id
+          ? " and user balance updated"
+          : ""
+      }`,
       data: transaction,
     });
   } catch (error: any) {

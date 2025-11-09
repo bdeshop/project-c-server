@@ -22,6 +22,7 @@ import promotionRoutes from "./routes/promotionRoutes";
 import transactionRoutes from "./routes/transactionRoutes";
 import contactRoutes from "./routes/contactRoutes";
 import apkRoutes from "./routes/apkRoutes";
+import withdrawalMethodRoutes from "./routes/withdrawalMethodRoutes";
 import { handleMulterError } from "./middleware/multer";
 
 // Load environment variables
@@ -97,6 +98,7 @@ app.use("/api/promo-section", promoSectionRoutes);
 app.use("/api/theme-config", themeConfigRoutes);
 app.use("/api/referral", referralRoutes);
 app.use("/api/payment-methods", paymentMethodRoutes);
+app.use("/api/withdrawal-methods", withdrawalMethodRoutes);
 app.use("/api/promotions", promotionRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/contact", contactRoutes);

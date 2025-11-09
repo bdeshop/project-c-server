@@ -46,6 +46,8 @@ export interface IUser extends Document {
   };
   // Username field for MongoDB index compatibility
   username: string;
+  createdAt: Date;
+  updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 

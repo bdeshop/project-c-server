@@ -69,6 +69,20 @@ const promotionStorage = new CloudinaryStorage({
   } as any,
 });
 
+// Configure Cloudinary storage for user profile images
+const profileImageStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "user-profiles", // Folder name in Cloudinary
+    allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
+    transformation: [
+      { width: 400, height: 400, crop: "limit" }, // Resize images for profiles
+      { quality: "auto" }, // Auto optimize quality
+      { fetch_format: "auto" }, // Auto format selection
+    ],
+  } as any,
+});
+
 // Create multer upload middleware for payment methods
 export const uploadPaymentMethodImages = multer({
   storage: paymentMethodStorage,
@@ -101,6 +115,22 @@ export const uploadPromotionImages = multer({
   },
 });
 
+// Create multer upload middleware for user profile images
+export const uploadProfileImage = multer({
+  storage: profileImageStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Check file type
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed!"));
+    }
+  },
+});
+
 // Helper function to delete image from Cloudinary
 export const deleteCloudinaryImage = async (
   publicId: string
@@ -120,13 +150,17 @@ export const extractPublicId = (url: string): string | null => {
     // Examples:
     // https://res.cloudinary.com/dm7xbqgdu/image/upload/v1234567890/payment-methods/abc123.jpg
     // https://res.cloudinary.com/dm7xbqgdu/image/upload/v1234567890/promotions/xyz789.jpg
+    // https://res.cloudinary.com/dm7xbqgdu/image/upload/v1234567890/user-profiles/def456.jpg
     const paymentMethodMatch = url.match(/\/payment-methods\/([^\.]+)/);
     const promotionMatch = url.match(/\/promotions\/([^\.]+)/);
+    const profileMatch = url.match(/\/user-profiles\/([^\.]+)/);
 
     if (paymentMethodMatch) {
       return `payment-methods/${paymentMethodMatch[1]}`;
     } else if (promotionMatch) {
       return `promotions/${promotionMatch[1]}`;
+    } else if (profileMatch) {
+      return `user-profiles/${profileMatch[1]}`;
     }
 
     return null;

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Promotion from "../models/Promotion";
+import Promotion, { IPromotion } from "../models/Promotion";
 import { deleteCloudinaryImage, extractPublicId } from "../config/cloudinary";
 
 interface AuthenticatedRequest extends Request {
@@ -46,22 +46,28 @@ export const getPromotions = async (req: Request, res: Response) => {
 // @desc    Get single promotion
 // @route   GET /api/promotions/:id
 // @access  Public
-export const getPromotion = async (req: Request, res: Response) => {
+export const getPromotion = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const promotion = await Promotion.findById(req.params.id).populate(
       "payment_methods"
     );
 
     if (!promotion) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Promotion not found",
       });
+      return;
     }
 
     // Get image URL (Cloudinary URLs are already full URLs)
     const promotionObj = promotion.toObject();
-    promotionObj.promotion_image = getImageUrl(promotionObj.promotion_image);
+    promotionObj.promotion_image = getImageUrl(
+      promotionObj.promotion_image ?? null
+    );
 
     res.status(200).json({
       success: true,
@@ -82,7 +88,7 @@ export const getPromotion = async (req: Request, res: Response) => {
 export const createPromotion = async (
   req: AuthenticatedRequest,
   res: Response
-) => {
+): Promise<void> => {
   try {
     const {
       title_en,
@@ -101,11 +107,12 @@ export const createPromotion = async (
       try {
         parsedPaymentMethods = JSON.parse(payment_methods);
       } catch (parseError) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Invalid payment_methods format",
           error: "payment_methods must be a valid JSON array",
         });
+        return;
       }
     }
 
@@ -147,7 +154,9 @@ export const createPromotion = async (
 
     // Get image URL for response (Cloudinary URLs are already full URLs)
     const promotionObj = promotion.toObject();
-    promotionObj.promotion_image = getImageUrl(promotionObj.promotion_image);
+    promotionObj.promotion_image = getImageUrl(
+      promotionObj.promotion_image ?? null
+    );
 
     res.status(201).json({
       success: true,
@@ -169,7 +178,7 @@ export const createPromotion = async (
 export const updatePromotion = async (
   req: AuthenticatedRequest,
   res: Response
-) => {
+): Promise<void> => {
   try {
     // Get the existing promotion to handle image deletion if needed
     const existingPromotion = await Promotion.findById(req.params.id);
@@ -185,11 +194,12 @@ export const updatePromotion = async (
       try {
         updateData.payment_methods = JSON.parse(updateData.payment_methods);
       } catch (parseError) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Invalid payment_methods format",
           error: "payment_methods must be a valid JSON array",
         });
+        return;
       }
     }
 
@@ -228,15 +238,18 @@ export const updatePromotion = async (
     ).populate("payment_methods", "method_name_en method_name_bd status");
 
     if (!promotion) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Promotion not found",
       });
+      return;
     }
 
     // Get image URL for response (Cloudinary URLs are already full URLs)
     const promotionObj = promotion.toObject();
-    promotionObj.promotion_image = getImageUrl(promotionObj.promotion_image);
+    promotionObj.promotion_image = getImageUrl(
+      promotionObj.promotion_image ?? null
+    );
 
     res.status(200).json({
       success: true,
@@ -255,15 +268,19 @@ export const updatePromotion = async (
 // @desc    Delete promotion
 // @route   DELETE /api/promotions/:id
 // @access  Private (Admin only)
-export const deletePromotion = async (req: Request, res: Response) => {
+export const deletePromotion = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const promotion = await Promotion.findById(req.params.id);
 
     if (!promotion) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Promotion not found",
       });
+      return;
     }
 
     // Delete image from Cloudinary if it exists
@@ -293,15 +310,19 @@ export const deletePromotion = async (req: Request, res: Response) => {
 // @desc    Toggle promotion status
 // @route   PATCH /api/promotions/:id/status
 // @access  Private (Admin only)
-export const togglePromotionStatus = async (req: Request, res: Response) => {
+export const togglePromotionStatus = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const promotion = await Promotion.findById(req.params.id);
 
     if (!promotion) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Promotion not found",
       });
+      return;
     }
 
     promotion.status = promotion.status === "Active" ? "Inactive" : "Active";
@@ -314,7 +335,9 @@ export const togglePromotionStatus = async (req: Request, res: Response) => {
 
     // Get image URL for response (Cloudinary URLs are already full URLs)
     const promotionObj = promotion.toObject();
-    promotionObj.promotion_image = getImageUrl(promotionObj.promotion_image);
+    promotionObj.promotion_image = getImageUrl(
+      promotionObj.promotion_image ?? null
+    );
 
     res.status(200).json({
       success: true,
@@ -345,7 +368,9 @@ export const getPromotionsByGameType = async (req: Request, res: Response) => {
     // Get image URLs (Cloudinary URLs are already full URLs)
     const promotionsWithImageUrls = promotions.map((promotion) => {
       const promotionObj = promotion.toObject();
-      promotionObj.promotion_image = getImageUrl(promotionObj.promotion_image);
+      promotionObj.promotion_image = getImageUrl(
+        promotionObj.promotion_image ?? null
+      );
       return promotionObj;
     });
 
@@ -383,7 +408,7 @@ export const testImageAccess = async (req: Request, res: Response) => {
       backendUrl:
         process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`,
       sampleImageUrl: samplePromotion
-        ? getImageUrl(samplePromotion.promotion_image)
+        ? getImageUrl(samplePromotion.promotion_image ?? null)
         : null,
       corsEnabled: true,
       instructions: {
@@ -392,7 +417,7 @@ export const testImageAccess = async (req: Request, res: Response) => {
           "Images should be accessible via fetch() or axios from your React apps",
         example: samplePromotion
           ? `<img src="${getImageUrl(
-              samplePromotion.promotion_image
+              samplePromotion.promotion_image ?? null
             )}" alt="Promotion" />`
           : "No sample image available - create a promotion with image first",
       },

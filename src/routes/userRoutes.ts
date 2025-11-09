@@ -7,13 +7,17 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  changePassword,
+  updateProfileWithImage,
 } from "../controllers/userController";
 import {
   signupValidation,
   loginValidation,
   updateUserValidation,
+  changePasswordValidation,
 } from "../middleware/validation";
 import { protect } from "../middleware/auth";
+import { uploadProfileImage } from "../config/cloudinary";
 
 const router = express.Router();
 
@@ -33,6 +37,16 @@ router.post("/login", loginValidation, login);
 // @access  Private
 router.get("/profile", protect, getProfile);
 
+// @route   PUT /api/users/profile
+// @desc    Update user profile with image upload
+// @access  Private
+router.put("/profile/:id", protect, uploadProfileImage.single("profileImage"), updateProfileWithImage);
+
+// @route   PUT /api/users/change-password
+// @desc    Change user password
+// @access  Private
+router.put("/change-password", protect, changePasswordValidation, changePassword);
+
 // @route   GET /api/users
 // @desc    Get all users (with pagination and filtering)
 // @access  Private (Admin recommended)
@@ -44,7 +58,7 @@ router.get("/", protect, getAllUsers);
 router.get("/:id", protect, getUserById);
 
 // @route   PUT /api/users/:id
-// @desc    Update user
+// @desc    Update user (admin only)
 // @access  Private
 router.put("/:id", protect, updateUserValidation, updateUser);
 

@@ -6,7 +6,7 @@ import ReferralTransaction, {
 import ReferralSettings, {
   IReferralSettings,
 } from "../models/ReferralSettings";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -796,11 +796,15 @@ export const fixJAM657Referral = async (
     // For each user referred by JAM657, ensure they're in jamal's referredUsers array
     for (const referredUser of usersReferredByJAM657) {
       const isAlreadyInArray = jamalReferrer.referredUsers.some(
-        (userId) => userId.toString() === referredUser._id.toString()
+        (userId) =>
+          userId.toString() ===
+          (referredUser._id as mongoose.Types.ObjectId).toString()
       );
 
       if (!isAlreadyInArray) {
-        jamalReferrer.referredUsers.push(referredUser._id);
+        jamalReferrer.referredUsers.push(
+          referredUser._id as mongoose.Types.ObjectId
+        );
         fixedCount++;
         console.log(
           `✅ Added ${
@@ -918,11 +922,12 @@ export const fixSpecificReferral = async (
 
     // Check if jamal is in referrer's referredUsers array
     const isAlreadyReferred = referrer.referredUsers.some(
-      (userId) => userId.toString() === jamal._id.toString()
+      (userId) =>
+        userId.toString() === (jamal._id as mongoose.Types.ObjectId).toString()
     );
 
     if (!isAlreadyReferred) {
-      referrer.referredUsers.push(jamal._id);
+      referrer.referredUsers.push(jamal._id as mongoose.Types.ObjectId);
       await referrer.save();
       message += "✅ Added jamal to referrer's referredUsers array. ";
       fixed = true;
@@ -1023,12 +1028,16 @@ export const fixReferralRelationships = async (
         if (referrer) {
           // Check if this user is already in referrer's referredUsers array
           const isAlreadyReferred = referrer.referredUsers.some(
-            (userId) => userId.toString() === referredUser._id.toString()
+            (userId) =>
+              userId.toString() ===
+              (referredUser._id as mongoose.Types.ObjectId).toString()
           );
 
           if (!isAlreadyReferred) {
             // Add the referred user to referrer's array
-            referrer.referredUsers.push(referredUser._id);
+            referrer.referredUsers.push(
+              referredUser._id as mongoose.Types.ObjectId
+            );
             await referrer.save();
             fixedCount++;
             console.log(
@@ -1250,11 +1259,15 @@ export const fixJKDII8Referral = async (
     // For each user referred by JKDII8, ensure they're in referrer's referredUsers array
     for (const referredUser of usersReferredByJKDII8) {
       const isAlreadyInArray = referrer.referredUsers.some(
-        (userId) => userId.toString() === referredUser._id.toString()
+        (userId) =>
+          userId.toString() ===
+          (referredUser._id as mongoose.Types.ObjectId).toString()
       );
 
       if (!isAlreadyInArray) {
-        referrer.referredUsers.push(referredUser._id);
+        referrer.referredUsers.push(
+          referredUser._id as mongoose.Types.ObjectId
+        );
         fixedCount++;
         console.log(
           `✅ Added ${
@@ -1390,10 +1403,12 @@ export const debugSpecificReferralCode = async (
       // Check if all users with referredBy field are in referrer's array
       for (const user of usersReferredByCode) {
         const isInArray = referrer.referredUsers.some(
-          (refUser: any) => refUser._id.toString() === user._id.toString()
+          (refUser: any) =>
+            refUser._id.toString() ===
+            (user._id as mongoose.Types.ObjectId).toString()
         );
         if (!isInArray) {
-          debugInfo.inconsistencies.push({
+          (debugInfo.inconsistencies as any[]).push({
             type: "missing_in_array",
             message: `User ${user.name} (${user.email}) has referredBy=${code} but is not in referrer's referredUsers array`,
           });
@@ -1403,7 +1418,7 @@ export const debugSpecificReferralCode = async (
       // Check if all users in referrer's array have correct referredBy field
       for (const refUser of referrer.referredUsers) {
         if ((refUser as any).referredBy !== code) {
-          debugInfo.inconsistencies.push({
+          (debugInfo.inconsistencies as any[]).push({
             type: "incorrect_referredBy",
             message: `User ${
               (refUser as any).name

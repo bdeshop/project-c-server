@@ -70,15 +70,19 @@ export const getPaymentMethods = async (req: Request, res: Response) => {
 // @desc    Get single payment method
 // @route   GET /api/payment-methods/:id
 // @access  Public
-export const getPaymentMethod = async (req: Request, res: Response) => {
+export const getPaymentMethod = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const paymentMethod = await PaymentMethod.findById(req.params.id);
 
     if (!paymentMethod) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Payment method not found",
       });
+      return;
     }
 
     res.status(200).json({
@@ -197,7 +201,10 @@ export const createPaymentMethod = async (req: Request, res: Response) => {
 // @desc    Update payment method
 // @route   PUT /api/payment-methods/:id
 // @access  Private (Admin only)
-export const updatePaymentMethod = async (req: Request, res: Response) => {
+export const updatePaymentMethod = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const {
       method_name_en,
@@ -219,10 +226,11 @@ export const updatePaymentMethod = async (req: Request, res: Response) => {
     // Get existing payment method to handle old images
     const existingPaymentMethod = await PaymentMethod.findById(req.params.id);
     if (!existingPaymentMethod) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Payment method not found",
       });
+      return;
     }
 
     // Handle uploaded files from Cloudinary
@@ -331,15 +339,19 @@ export const updatePaymentMethod = async (req: Request, res: Response) => {
 // @desc    Delete payment method
 // @route   DELETE /api/payment-methods/:id
 // @access  Private (Admin only)
-export const deletePaymentMethod = async (req: Request, res: Response) => {
+export const deletePaymentMethod = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const paymentMethod = await PaymentMethod.findById(req.params.id);
 
     if (!paymentMethod) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Payment method not found",
       });
+      return;
     }
 
     // Delete images from Cloudinary before deleting the record
@@ -387,15 +399,16 @@ export const deletePaymentMethod = async (req: Request, res: Response) => {
 export const togglePaymentMethodStatus = async (
   req: Request,
   res: Response
-) => {
+): Promise<void> => {
   try {
     const paymentMethod = await PaymentMethod.findById(req.params.id);
 
     if (!paymentMethod) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Payment method not found",
       });
+      return;
     }
 
     paymentMethod.status =

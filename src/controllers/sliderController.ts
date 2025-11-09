@@ -20,24 +20,29 @@ const generateFullImageUrl = (req: Request, imagePath: string): string => {
 // @desc    Create a new slider
 // @route   POST /api/sliders
 // @access  Private
-export const createSlider = async (req: Request, res: Response) => {
+export const createSlider = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { title, status } = req.body;
     const image = req.file;
 
     // Validation
     if (!title || !status) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: "Title and status are required",
       });
+      return;
     }
 
     if (!image) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: "Image is required",
       });
+      return;
     }
 
     const slider = new Slider({
@@ -99,16 +104,17 @@ export const getSliders = async (req: Request, res: Response) => {
 // @desc    Get single slider
 // @route   GET /api/sliders/:id
 // @access  Public
-export const getSlider = async (req: Request, res: Response) => {
+export const getSlider = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const slider = await Slider.findById(id);
 
     if (!slider) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: "Slider not found",
       });
+      return;
     }
 
     // Return slider with full image URL
@@ -133,7 +139,10 @@ export const getSlider = async (req: Request, res: Response) => {
 // @desc    Update slider
 // @route   PUT /api/sliders/:id
 // @access  Private
-export const updateSlider = async (req: Request, res: Response) => {
+export const updateSlider = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const { title, status } = req.body;
@@ -142,10 +151,11 @@ export const updateSlider = async (req: Request, res: Response) => {
     // Check if slider exists
     const existingSlider = await Slider.findById(id);
     if (!existingSlider) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: "Slider not found",
       });
+      return;
     }
 
     // Prepare update data
@@ -193,17 +203,21 @@ export const updateSlider = async (req: Request, res: Response) => {
 // @desc    Delete slider
 // @route   DELETE /api/sliders/:id
 // @access  Private
-export const deleteSlider = async (req: Request, res: Response) => {
+export const deleteSlider = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
 
     const slider = await Slider.findByIdAndDelete(id);
 
     if (!slider) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: "Slider not found",
       });
+      return;
     }
 
     // In a real app, you would also delete the image file from the filesystem

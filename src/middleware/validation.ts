@@ -71,6 +71,12 @@ export const updateUserValidation = [
     .isLength({ max: 100 })
     .withMessage("Name cannot exceed 100 characters"),
 
+  body("username")
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage("Username must be between 1 and 100 characters"),
+
   body("email")
     .optional()
     .trim()
@@ -173,6 +179,27 @@ export const updateUserValidation = [
     .withMessage("Role must be either 'user' or 'admin'"),
 
   body("profileImage").optional().trim(),
+];
+
+// Add validation for change password
+export const changePasswordValidation = [
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required")
+    .isLength({ min: 6 })
+    .withMessage("Current password must be at least 6 characters"),
+
+  body("newPassword")
+    .notEmpty()
+    .withMessage("New password is required")
+    .isLength({ min: 6 })
+    .withMessage("New password must be at least 6 characters")
+    .custom((value, { req }) => {
+      if (value === req.body.currentPassword) {
+        throw new Error("New password must be different from current password");
+      }
+      return true;
+    }),
 ];
 
 // Settings validation

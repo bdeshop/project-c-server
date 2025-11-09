@@ -7,6 +7,7 @@ import ReferralTransaction from "../models/ReferralTransaction";
 import ReferralSettings from "../models/ReferralSettings";
 import config from "../config/config";
 import { Types } from "mongoose";
+import { uploadProfileImage } from "../config/cloudinary";
 
 // Generate a unique referral code
 const generateReferralCode = (username?: string): string => {
@@ -74,9 +75,35 @@ interface UpdateUserRequest extends AuthenticatedRequest {
     birthday?: string;
     role?: "user" | "admin";
     profileImage?: string;
+    username?: string; // Add username field
   };
   params: {
     id: string;
+  };
+}
+
+// Add interface for profile update with image upload
+interface UpdateProfileWithImageRequest extends AuthenticatedRequest {
+  file?: Express.Multer.File;
+  body: {
+    name?: string;
+    email?: string;
+    country?: string;
+    currency?: string;
+    phoneNumber?: string;
+    birthday?: string;
+    username?: string;
+  };
+  params: {
+    id: string;
+  };
+}
+
+// Add interface for password change
+interface ChangePasswordRequest extends AuthenticatedRequest {
+  body: {
+    currentPassword: string;
+    newPassword: string;
   };
 }
 
@@ -487,7 +514,7 @@ export const login = async (
   }
 };
 
-// @desc    Get user profile
+// @desc    Get user profile with all requested fields
 // @route   GET /api/users/profile
 // @access  Private
 export const getProfile = async (
@@ -517,6 +544,7 @@ export const getProfile = async (
       data: {
         user: {
           id: user._id,
+          username: user.username,
           name: user.name,
           email: user.email,
           country: user.country,
@@ -530,6 +558,9 @@ export const getProfile = async (
           emailVerified: user.emailVerified,
           status: user.status,
           role: user.role,
+          profileImage: user.profileImage,
+          birthday: user.birthday,
+          referralCode: user.referralCode,
         },
       },
     });
@@ -941,6 +972,180 @@ export const deleteUser = async (
     res.status(500).json({
       success: false,
       message: "Server error during deletion",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+// @desc    Update user profile with image upload
+// @route   PUT /api/users/profile
+// @access  Private
+export const updateProfileWithImage = async (
+  req: UpdateProfileWithImageRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+      return;
+    }
+
+    // Check if user is updating their own profile
+    if (req.user.id !== req.params.id) {
+      res.status(403).json({
+        success: false,
+        message: "You can only update your own profile",
+      });
+      return;
+    }
+
+    const updates: any = { ...req.body };
+
+    // If file is uploaded, add it to updates
+    if (req.file) {
+      updates.profileImage = req.file.path; // Cloudinary provides the URL in the path property
+    }
+
+    // Remove sensitive fields that shouldn't be updated directly
+    delete updates.password;
+    delete updates.emailVerifyOTP;
+    delete updates.phoneNumberOTP;
+    delete updates.role; // Users shouldn't be able to change their role
+    delete updates.balance; // Users shouldn't be able to change their balance directly
+    delete updates.deposit;
+    delete updates.withdraw;
+    delete updates.status; // Users shouldn't be able to change their status
+
+    // Check if email is being updated and ensure uniqueness
+    if (updates.email) {
+      const existingUser = await User.findOne({
+        $and: [{ _id: { $ne: req.user.id } }, { email: updates.email }],
+      });
+
+      if (existingUser) {
+        res.status(400).json({
+          success: false,
+          message: "Email is already in use by another user",
+        });
+        return;
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select("-password -emailVerifyOTP -phoneNumberOTP");
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: {
+        user,
+      },
+    });
+  } catch (error: any) {
+    console.error("Update profile error:", error);
+
+    // Handle MongoDB duplicate key error
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      res.status(400).json({
+        success: false,
+        message: `${
+          field.charAt(0).toUpperCase() + field.slice(1)
+        } is already in use`,
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Server error during update",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+// @desc    Change user password
+// @route   PUT /api/users/change-password
+// @access  Private
+export const changePassword = async (
+  req: ChangePasswordRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({
+        success: false,
+        message: "Current password and new password are required",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      res.status(400).json({
+        success: false,
+        message: "New password must be at least 6 characters long",
+      });
+      return;
+    }
+
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+      return;
+    }
+
+    // Find user with password
+    const user = await User.findById(req.user.id).select("+password");
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    // Check current password
+    const isPasswordValid = await user.comparePassword(currentPassword);
+    if (!isPasswordValid) {
+      res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+      return;
+    }
+
+    // Set new password
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error: any) {
+    console.error("Change password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during password change",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }

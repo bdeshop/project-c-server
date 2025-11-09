@@ -71,7 +71,10 @@ export const getTransactions = async (req: Request, res: Response) => {
 // @desc    Get single transaction
 // @route   GET /api/transactions/:id
 // @access  Private (Admin only)
-export const getTransaction = async (req: Request, res: Response) => {
+export const getTransaction = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const transaction = await Transaction.findById(req.params.id).populate(
       "user_id",
@@ -79,10 +82,11 @@ export const getTransaction = async (req: Request, res: Response) => {
     );
 
     if (!transaction) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Transaction not found",
       });
+      return;
     }
 
     res.status(200).json({
@@ -104,7 +108,7 @@ export const getTransaction = async (req: Request, res: Response) => {
 export const createTransaction = async (
   req: AuthenticatedRequest,
   res: Response
-) => {
+): Promise<void> => {
   try {
     const {
       amount,
@@ -121,10 +125,11 @@ export const createTransaction = async (
     // Check if transaction_id already exists
     const existingTransaction = await Transaction.findOne({ transaction_id });
     if (existingTransaction) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Transaction ID already exists",
       });
+      return;
     }
 
     const transaction = await Transaction.create({
@@ -162,7 +167,7 @@ export const createTransaction = async (
 export const updateTransaction = async (
   req: AuthenticatedRequest,
   res: Response
-) => {
+): Promise<void> => {
   try {
     const {
       amount,
@@ -183,10 +188,11 @@ export const updateTransaction = async (
         _id: { $ne: req.params.id },
       });
       if (existingTransaction) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Transaction ID already exists",
         });
+        return;
       }
     }
 
@@ -210,10 +216,11 @@ export const updateTransaction = async (
     ).populate("user_id", "username email");
 
     if (!transaction) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Transaction not found",
       });
+      return;
     }
 
     res.status(200).json({
@@ -233,15 +240,19 @@ export const updateTransaction = async (
 // @desc    Delete transaction
 // @route   DELETE /api/transactions/:id
 // @access  Private (Admin only)
-export const deleteTransaction = async (req: Request, res: Response) => {
+export const deleteTransaction = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const transaction = await Transaction.findByIdAndDelete(req.params.id);
 
     if (!transaction) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Transaction not found",
       });
+      return;
     }
 
     res.status(200).json({
@@ -260,16 +271,20 @@ export const deleteTransaction = async (req: Request, res: Response) => {
 // @desc    Update transaction status
 // @route   PATCH /api/transactions/:id/status
 // @access  Private (Admin only)
-export const updateTransactionStatus = async (req: Request, res: Response) => {
+export const updateTransactionStatus = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { status } = req.body;
 
     if (!["Pending", "Completed", "Failed", "Cancelled"].includes(status)) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message:
           "Invalid status. Must be: Pending, Completed, Failed, or Cancelled",
       });
+      return;
     }
 
     const transaction = await Transaction.findByIdAndUpdate(
@@ -279,10 +294,11 @@ export const updateTransactionStatus = async (req: Request, res: Response) => {
     ).populate("user_id", "username email");
 
     if (!transaction) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Transaction not found",
       });
+      return;
     }
 
     res.status(200).json({

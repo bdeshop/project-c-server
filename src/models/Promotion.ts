@@ -1,8 +1,26 @@
 import mongoose from "mongoose";
 
+export interface IPromotion extends mongoose.Document {
+  promotion_image: string | null;
+  title_en: string;
+  title_bd?: string;
+  description_en?: string;
+  description_bd?: string;
+  game_type: string;
+  payment_methods: mongoose.Types.ObjectId[];
+  bonus_settings: {
+    bonus_type: "percentage" | "fixed";
+    bonus_value: number;
+    max_bonus_limit: number;
+  };
+  status: "Active" | "Inactive";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 const promotionSchema = new mongoose.Schema(
   {
-    promotion_image: { type: String, required: false }, // File path or URL
+    promotion_image: { type: String, required: false, default: null }, // File path or URL
     title_en: { type: String, required: true }, // Promotion Title (English)
     title_bd: { type: String, required: false }, // Title (Bangla)
     description_en: { type: String, required: false }, // Description (English)
@@ -30,4 +48,4 @@ const promotionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Promotion", promotionSchema);
+export default mongoose.model<IPromotion>("Promotion", promotionSchema);

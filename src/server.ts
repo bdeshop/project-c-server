@@ -21,6 +21,7 @@ import paymentMethodRoutes from "./routes/paymentMethodRoutes";
 import promotionRoutes from "./routes/promotionRoutes";
 import transactionRoutes from "./routes/transactionRoutes";
 import contactRoutes from "./routes/contactRoutes";
+import apkRoutes from "./routes/apkRoutes";
 import { handleMulterError } from "./middleware/multer";
 
 // Load environment variables
@@ -99,6 +100,7 @@ app.use("/api/payment-methods", paymentMethodRoutes);
 app.use("/api/promotions", promotionRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/apk", apkRoutes);
 
 // Enhanced static file serving with comprehensive CORS support
 app.use(
@@ -141,6 +143,22 @@ app.use(
         res.setHeader("Content-Type", "image/gif");
       } else if (path.endsWith(".webp")) {
         res.setHeader("Content-Type", "image/webp");
+      }
+    },
+  })
+);
+
+// Serve APK files statically (optional - for direct access)
+app.use(
+  "/apk",
+  cors(corsOptions),
+  express.static("apk", {
+    setHeaders: (res, path) => {
+      if (path.endsWith(".apk")) {
+        res.setHeader(
+          "Content-Type",
+          "application/vnd.android.package-archive"
+        );
       }
     },
   })

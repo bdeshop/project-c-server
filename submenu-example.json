@@ -1,0 +1,88 @@
+{
+  "navigationItems": [
+    {
+      "id": "1",
+      "label": "Home",
+      "url": "/",
+      "order": 1
+    },
+    {
+      "id": "2",
+      "label": "Slot",
+      "url": "/slotgames",
+      "order": 2,
+      "submenu": [
+        {
+          "id": "2-1",
+          "name": "PG Soft",
+          "path": "/slotgames/pgsoft",
+          "icon": "/upload/slotLogo1.png"
+        },
+        {
+          "id": "2-2",
+          "name": "JILLI",
+          "path": "/slotgames/jilli",
+          "icon": "/upload/slotLogo2.png"
+        },
+        {
+          "id": "2-3",
+          "name": "Boongo",
+          "path": "/slotgames/boongo",
+          "icon": "/upload/slotLogo3.png"
+        },
+        {
+          "id": "2-4",
+          "name": "Spade Gaming",
+          "path": "/slotgames/spade",
+          "icon": "/upload/slotLogo4.png"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "label": "Live Casino",
+      "url": "/livecasino",
+      "order": 3,
+      "submenu": [
+        {
+          "id": "3-1",
+          "name": "Evolution Gaming",
+          "path": "/livecasino/evolution",
+          "icon": "/upload/livecasinoLogo1.png"
+        },
+        {
+          "id": "3-2",
+          "name": "Pragmatic Play",
+          "path": "/livecasino/pragmatic",
+          "icon": "/upload/livecasinoLogo2.png"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "label": "Cricket",
+      "url": "/cricket",
+      "order": 4,
+      "submenu": [
+        {
+          "id": "4-1",
+          "name": "Betswiz",
+          "path": "/cricket/betswiz",
+          "icon": "/upload/CricketLogo.png"
+        },
+        {
+          "id": "4-2",
+          "name": "Dream Exchange",
+          "path": "/cricket/dream",
+          "icon": "/upload/CricketLogoTwo.png"
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "label": "Promotion",
+      "url": "/promotion",
+      "order": 5
+    }
+  ]
+}

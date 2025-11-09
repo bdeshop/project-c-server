@@ -20,6 +20,7 @@ import referralRoutes from "./routes/referralRoutes";
 import paymentMethodRoutes from "./routes/paymentMethodRoutes";
 import promotionRoutes from "./routes/promotionRoutes";
 import transactionRoutes from "./routes/transactionRoutes";
+import contactRoutes from "./routes/contactRoutes";
 import { handleMulterError } from "./middleware/multer";
 
 // Load environment variables
@@ -97,6 +98,7 @@ app.use("/api/referral", referralRoutes);
 app.use("/api/payment-methods", paymentMethodRoutes);
 app.use("/api/promotions", promotionRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/contact", contactRoutes);
 
 // Enhanced static file serving with comprehensive CORS support
 app.use(

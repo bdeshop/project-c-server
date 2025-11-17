@@ -14,7 +14,7 @@ router.post("/", protect, createWithdrawalRequest);
 router.get("/", protect, getUserWithdrawalRequests);
 router.patch("/:id/cancel", protect, cancelWithdrawalRequest);
 
-// Admin routes
+// Get all withdrawal requests (admin sees all, user sees own)
 router.get("/all", protect, getAllWithdrawalRequests);
 
 export default router;

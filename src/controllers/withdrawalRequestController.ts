@@ -234,26 +234,23 @@ export const getUserWithdrawalRequests = async (
   }
 };
 
-// @desc    Get all withdrawal requests (Admin)
+// @desc    Get all withdrawal requests (admin sees all, user sees own)
 // @route   GET /api/withdrawal-requests/all
-// @access  Private (Admin only)
+// @access  Private
 export const getAllWithdrawalRequests = async (
   req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {
-    // Check if user is admin
-    if (!req.user || req.user.role !== "admin") {
-      res.status(403).json({
-        success: false,
-        message: "Access denied. Admin only.",
-      });
-      return;
-    }
-
     const { status, page = 1, limit = 20 } = req.query;
 
     const filter: any = { transaction_type: "Withdrawal" };
+
+    // If user is not admin, only show their withdrawal requests
+    if (req.user?.role !== "admin") {
+      filter.user_id = req.user?.id;
+    }
+
     if (status) {
       filter.status = status;
     }

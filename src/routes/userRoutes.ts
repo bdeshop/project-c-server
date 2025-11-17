@@ -18,7 +18,7 @@ import {
   updateUserValidation,
   changePasswordValidation,
 } from "../middleware/validation";
-import { protect } from "../middleware/auth";
+import { protect, adminOnly } from "../middleware/auth";
 import { uploadProfileImage } from "../config/cloudinary";
 
 const router = express.Router();
@@ -67,12 +67,12 @@ router.get("/balance", protect, getUserBalance);
 // @route   PUT /api/users/balance/:id
 // @desc    Update user balance (deposit/withdraw) - Admin only
 // @access  Private (Admin only)
-router.put("/balance/:id", protect, updateUserBalance);
+router.put("/balance/:id", protect, adminOnly, updateUserBalance);
 
 // @route   GET /api/users
 // @desc    Get all users (with pagination and filtering)
-// @access  Private (Admin recommended)
-router.get("/", protect, getAllUsers);
+// @access  Private (Admin only)
+router.get("/", protect, adminOnly, getAllUsers);
 
 // @route   GET /api/users/:id
 // @desc    Get user by ID
@@ -81,12 +81,12 @@ router.get("/:id", protect, getUserById);
 
 // @route   PUT /api/users/:id
 // @desc    Update user (admin only)
-// @access  Private
-router.put("/:id", protect, updateUserValidation, updateUser);
+// @access  Private (Admin only)
+router.put("/:id", protect, adminOnly, updateUserValidation, updateUser);
 
 // @route   DELETE /api/users/:id
 // @desc    Delete user
-// @access  Private (Admin only recommended)
-router.delete("/:id", protect, deleteUser);
+// @access  Private (Admin only)
+router.delete("/:id", protect, adminOnly, deleteUser);
 
 export default router;

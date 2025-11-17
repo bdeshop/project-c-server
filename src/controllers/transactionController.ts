@@ -8,10 +8,13 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-// @desc    Get all transactions
+// @desc    Get all transactions (admin sees all, user sees own)
 // @route   GET /api/transactions
-// @access  Private (Admin only)
-export const getTransactions = async (req: Request, res: Response) => {
+// @access  Private
+export const getTransactions = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
     const {
       page = 1,
@@ -24,6 +27,11 @@ export const getTransactions = async (req: Request, res: Response) => {
 
     // Build filter object
     const filter: any = {};
+
+    // If user is not admin, only show their transactions
+    if (req.user?.role !== "admin") {
+      filter.user_id = req.user?.id;
+    }
 
     if (status) filter.status = status;
     if (wallet_provider) filter.wallet_provider = wallet_provider;
@@ -68,11 +76,11 @@ export const getTransactions = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Get single transaction
+// @desc    Get single transaction (admin sees all, user sees own)
 // @route   GET /api/transactions/:id
-// @access  Private (Admin only)
+// @access  Private
 export const getTransaction = async (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {
@@ -85,6 +93,18 @@ export const getTransaction = async (
       res.status(404).json({
         success: false,
         message: "Transaction not found",
+      });
+      return;
+    }
+
+    // If user is not admin, check if they own this transaction
+    if (
+      req.user?.role !== "admin" &&
+      transaction.user_id._id.toString() !== req.user?.id
+    ) {
+      res.status(403).json({
+        success: false,
+        message: "Access denied. You can only view your own transactions.",
       });
       return;
     }

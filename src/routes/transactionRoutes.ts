@@ -33,14 +33,14 @@ router.get(
 );
 
 // @route   GET /api/transactions
-// @desc    Get all transactions with filtering and pagination
-// @access  Private (Admin only)
-router.get("/", protect, adminOnly, getTransactions);
+// @desc    Get all transactions (admin sees all, user sees own)
+// @access  Private
+router.get("/", protect, getTransactions);
 
 // @route   GET /api/transactions/:id
-// @desc    Get single transaction by ID
-// @access  Private (Admin only)
-router.get("/:id", protect, adminOnly, getTransaction);
+// @desc    Get single transaction by ID (admin sees all, user sees own)
+// @access  Private
+router.get("/:id", protect, getTransaction);
 
 // @route   POST /api/transactions
 // @desc    Create new transaction

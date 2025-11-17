@@ -24,6 +24,7 @@ import contactRoutes from "./routes/contactRoutes";
 import apkRoutes from "./routes/apkRoutes";
 import withdrawalMethodRoutes from "./routes/withdrawalMethodRoutes";
 import withdrawalRequestRoutes from "./routes/withdrawalRequestRoutes";
+import statsRoutes from "./routes/statsRoutes";
 import { handleMulterError } from "./middleware/multer";
 
 // Load environment variables
@@ -105,6 +106,7 @@ app.use("/api/promotions", promotionRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/apk", apkRoutes);
+app.use("/api/stats", statsRoutes);
 
 // Enhanced static file serving with comprehensive CORS support
 app.use(

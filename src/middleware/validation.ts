@@ -1,5 +1,28 @@
 import { body } from "express-validator";
 
+// Add validation for dashboard signup
+export const dashboardSignupValidation = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please provide a valid email address")
+    .normalizeEmail(),
+
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+
+  body("role")
+    .notEmpty()
+    .withMessage("Role is required")
+    .isIn(["admin", "user"])
+    .withMessage("Role must be 'admin' or 'user'"),
+];
+
 export const signupValidation = [
   body("username")
     .notEmpty()
@@ -47,7 +70,7 @@ export const signupValidation = [
   body("bonusSelection").optional().trim(),
 
   body("birthday").optional().trim(),
-  
+
   // Referral code field
   body("referredBy").optional().trim(),
 ];
@@ -214,7 +237,7 @@ export const updateSettingsValidation = [
     .optional()
     .trim()
     .matches(
-      /^(https?:\/\/.*(?:\.(?:png|jpg|jpeg|gif|svg|webp)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/
+      /^(https?:\/\/.*(?:\.(?:png|jpg|jpeg|gif|svg|webp)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/,
     )
     .withMessage("Please provide a valid image URL or base64 data URL"),
 
@@ -242,7 +265,7 @@ export const updateSettingsValidation = [
     .optional()
     .trim()
     .matches(
-      /^(https?:\/\/.*(?:\.(?:png|jpg|jpeg|gif|svg|webp)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/
+      /^(https?:\/\/.*(?:\.(?:png|jpg|jpeg|gif|svg|webp)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/,
     )
     .withMessage("Please provide a valid logo URL or base64 data URL"),
 
@@ -250,7 +273,7 @@ export const updateSettingsValidation = [
     .optional()
     .trim()
     .matches(
-      /^(https?:\/\/.*(?:\.(?:ico|png|jpg|jpeg|gif|svg)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/
+      /^(https?:\/\/.*(?:\.(?:ico|png|jpg|jpeg|gif|svg)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/,
     )
     .withMessage("Please provide a valid favicon URL or base64 data URL"),
 
@@ -367,7 +390,7 @@ export const updateOrganizationValidation = [
     .optional()
     .trim()
     .matches(
-      /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg|webp)|data:image\/[a-z]+;base64,)/
+      /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg|webp)|data:image\/[a-z]+;base64,)/,
     )
     .withMessage("Please provide a valid image URL or base64 data URL"),
 
@@ -375,7 +398,7 @@ export const updateOrganizationValidation = [
     .optional()
     .trim()
     .matches(
-      /^(https?:\/\/.*(?:\.(?:png|jpg|jpeg|gif|svg|webp)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/
+      /^(https?:\/\/.*(?:\.(?:png|jpg|jpeg|gif|svg|webp)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/,
     )
     .withMessage("Please provide a valid logo URL or base64 data URL"),
 
@@ -383,7 +406,7 @@ export const updateOrganizationValidation = [
     .optional()
     .trim()
     .matches(
-      /^(https?:\/\/.*(?:\.(?:ico|png|jpg|jpeg|gif|svg)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/
+      /^(https?:\/\/.*(?:\.(?:ico|png|jpg|jpeg|gif|svg)(?:\?.*)?|\/.*)|data:image\/[a-z]+;base64,)/,
     )
     .withMessage("Please provide a valid favicon URL or base64 data URL"),
 

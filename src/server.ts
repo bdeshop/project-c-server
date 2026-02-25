@@ -11,6 +11,7 @@ import connectDB from "./config/database";
 import config from "./config/config";
 import { specs } from "./config/swagger";
 import userRoutes from "./routes/userRoutes";
+import dashboardAuthRoutes from "./routes/dashboardAuthRoutes";
 import settingsRoutes from "./routes/settingsRoutes";
 import sliderRoutes from "./routes/sliderRoutes";
 import topWinnerRoutes from "./routes/topWinnerRoutes";
@@ -27,6 +28,10 @@ import apkRoutes from "./routes/apkRoutes";
 import withdrawalMethodRoutes from "./routes/withdrawalMethodRoutes";
 import withdrawalRequestRoutes from "./routes/withdrawalRequestRoutes";
 import statsRoutes from "./routes/statsRoutes";
+import gameRoutes from "./routes/gameRoutes";
+import gameCategoryRoutes from "./routes/gameCategoryRoutes";
+import providerRoutes from "./routes/providerRoutes";
+import popularGameRoutes from "./routes/popularGameRoutes";
 import { handleMulterError } from "./middleware/multer";
 
 // Load environment variables
@@ -100,6 +105,7 @@ app.use(
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/users/dashboard", dashboardAuthRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/sliders", sliderRoutes);
 app.use("/api/top-winners", topWinnerRoutes);
@@ -116,6 +122,10 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/apk", apkRoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/games", gameRoutes);
+app.use("/api/game-categories", gameCategoryRoutes);
+app.use("/api/providers", providerRoutes);
+app.use("/api/popular-games", popularGameRoutes);
 
 // Enhanced static file serving with comprehensive CORS support
 app.use(

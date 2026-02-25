@@ -21,29 +21,6 @@ import {
 import { protect, adminOnly } from "../middleware/auth";
 import { uploadProfileImage } from "../config/cloudinary";
 
-import express from "express";
-import {
-  signup,
-  login,
-  getProfile,
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
-  changePassword,
-  updateProfileWithImage,
-  getUserBalance,
-  updateUserBalance,
-} from "../controllers/userController";
-import {
-  signupValidation,
-  loginValidation,
-  updateUserValidation,
-  changePasswordValidation,
-} from "../middleware/validation";
-import { protect, adminOnly } from "../middleware/auth";
-import { uploadProfileImage } from "../config/cloudinary";
-
 const router = express.Router();
 
 /**

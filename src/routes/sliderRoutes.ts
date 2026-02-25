@@ -40,29 +40,107 @@ const upload = multer({
 
 const router = express.Router();
 
-// @route   POST /api/sliders
-// @desc    Create a new slider with image upload
-// @access  Private (Admin recommended)
+/**
+ * @swagger
+ * /api/sliders:
+ *   post:
+ *     summary: Create a new slider with image
+ *     tags: [Sliders]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               description: { type: string }
+ *               image: { type: string, format: binary }
+ *     responses:
+ *       201:
+ *         description: Slider created
+ */
 router.post("/", protect, upload.single("image"), createSlider);
 
-// @route   GET /api/sliders
-// @desc    Get all sliders
-// @access  Public
+/**
+ * @swagger
+ * /api/sliders:
+ *   get:
+ *     summary: Get all sliders
+ *     tags: [Sliders]
+ *     responses:
+ *       200:
+ *         description: List of sliders
+ */
 router.get("/", getSliders);
 
-// @route   GET /api/sliders/:id
-// @desc    Get single slider
-// @access  Public
+/**
+ * @swagger
+ * /api/sliders/{id}:
+ *   get:
+ *     summary: Get slider by ID
+ *     tags: [Sliders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Slider details
+ *       404:
+ *         description: Slider not found
+ */
 router.get("/:id", getSlider);
 
-// @route   PUT /api/sliders/:id
-// @desc    Update slider with optional image upload
-// @access  Private (Admin recommended)
+/**
+ * @swagger
+ * /api/sliders/{id}:
+ *   put:
+ *     summary: Update slider
+ *     tags: [Sliders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               description: { type: string }
+ *               image: { type: string, format: binary }
+ *     responses:
+ *       200:
+ *         description: Slider updated
+ */
 router.put("/:id", protect, upload.single("image"), updateSlider);
 
-// @route   DELETE /api/sliders/:id
-// @desc    Delete slider
-// @access  Private (Admin recommended)
+/**
+ * @swagger
+ * /api/sliders/{id}:
+ *   delete:
+ *     summary: Delete slider
+ *     tags: [Sliders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Slider deleted
+ */
 router.delete("/:id", protect, deleteSlider);
 
 export default router;

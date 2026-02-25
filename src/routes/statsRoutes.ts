@@ -10,49 +10,124 @@ import {
 } from "../controllers/statsController";
 import { protect, adminOnly } from "../middleware/auth";
 
+import express from "express";
+import {
+  getAdminStats,
+  getUserStats,
+  getRecentActivityLog,
+  getTransactionChartData,
+  getUserGrowthChart,
+  getFinancialChartData,
+  getReferralChartData,
+} from "../controllers/statsController";
+import { protect, adminOnly } from "../middleware/auth";
+
 const router = express.Router();
 
-// ============================================================================
-// STATISTICS ROUTES
-// ============================================================================
-
-// @route   GET /api/stats/admin
-// @desc    Get comprehensive admin dashboard statistics
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/stats/admin:
+ *   get:
+ *     summary: Get admin dashboard statistics (Admin only)
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Admin statistics
+ *       403:
+ *         description: Admin access required
+ */
 router.get("/admin", protect, adminOnly, getAdminStats);
 
-// @route   GET /api/stats/user
-// @desc    Get user dashboard statistics
-// @access  Private (User)
+/**
+ * @swagger
+ * /api/stats/user:
+ *   get:
+ *     summary: Get user dashboard statistics
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User statistics
+ */
 router.get("/user", protect, getUserStats);
 
-// ============================================================================
-// CHART DATA ROUTES
-// ============================================================================
-
-// @route   GET /api/stats/activity-log
-// @desc    Get recent activity log (admin sees all, user sees own)
-// @access  Private
+/**
+ * @swagger
+ * /api/stats/activity-log:
+ *   get:
+ *     summary: Get recent activity log
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Activity log
+ */
 router.get("/activity-log", protect, getRecentActivityLog);
 
-// @route   GET /api/stats/charts/transactions
-// @desc    Get transaction chart data (line chart + pie charts)
-// @access  Private
+/**
+ * @swagger
+ * /api/stats/charts/transactions:
+ *   get:
+ *     summary: Get transaction chart data
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Transaction chart data
+ */
 router.get("/charts/transactions", protect, getTransactionChartData);
 
-// @route   GET /api/stats/charts/user-growth
-// @desc    Get user growth chart data
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/stats/charts/user-growth:
+ *   get:
+ *     summary: Get user growth chart data (Admin only)
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User growth chart data
+ *       403:
+ *         description: Admin access required
+ */
 router.get("/charts/user-growth", protect, adminOnly, getUserGrowthChart);
 
-// @route   GET /api/stats/charts/financial
-// @desc    Get financial chart data
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/stats/charts/financial:
+ *   get:
+ *     summary: Get financial chart data (Admin only)
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Financial chart data
+ *       403:
+ *         description: Admin access required
+ */
 router.get("/charts/financial", protect, adminOnly, getFinancialChartData);
 
-// @route   GET /api/stats/charts/referrals
-// @desc    Get referral chart data
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/stats/charts/referrals:
+ *   get:
+ *     summary: Get referral chart data (Admin only)
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Referral chart data
+ *       403:
+ *         description: Admin access required
+ */
 router.get("/charts/referrals", protect, adminOnly, getReferralChartData);
 
 export default router;

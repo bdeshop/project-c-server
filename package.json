@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "khela88",
   "version": "1.0.0",
   "main": "dist/server.js",
   "scripts": {
@@ -17,7 +17,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Khela88 - Betting Platform Backend API",
   "dependencies": {
     "@types/multer": "^2.0.0",
     "bcryptjs": "^3.0.2",
@@ -36,7 +36,9 @@
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.6",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

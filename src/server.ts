@@ -6,8 +6,10 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
 import connectDB from "./config/database";
 import config from "./config/config";
+import { specs } from "./config/swagger";
 import userRoutes from "./routes/userRoutes";
 import settingsRoutes from "./routes/settingsRoutes";
 import sliderRoutes from "./routes/sliderRoutes";
@@ -89,6 +91,13 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // Multer error handling middleware
 app.use(handleMulterError);
 
+// Swagger Documentation
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(specs, { explorer: true }),
+);
+
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/settings", settingsRoutes);
@@ -117,7 +126,7 @@ app.use(
     res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
     );
     res.header("Access-Control-Allow-Credentials", "true");
 
@@ -151,7 +160,7 @@ app.use(
         res.setHeader("Content-Type", "image/webp");
       }
     },
-  })
+  }),
 );
 
 // Serve APK files statically (optional - for direct access)
@@ -163,16 +172,16 @@ app.use(
       if (path.endsWith(".apk")) {
         res.setHeader(
           "Content-Type",
-          "application/vnd.android.package-archive"
+          "application/vnd.android.package-archive",
         );
       }
     },
-  })
+  }),
 );
 
 app.get("/", (req: Request, res: Response) => {
   res.json({
-    message: "Betting Site Backend API",
+    message: "Khela88 Betting Platform API",
     version: "1.0.0",
     status: "Running",
     port: config.port,
@@ -234,5 +243,6 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📱 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`🌐 Access at: http://localhost:${PORT}`);
+  console.log(`📚 Swagger API Docs: http://localhost:${PORT}/api-docs`);
   console.log(`🔌 Socket.IO enabled with CORS for: ${frontendUrls.join(", ")}`);
 });

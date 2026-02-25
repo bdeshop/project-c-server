@@ -11,55 +11,198 @@ import {
 } from "../controllers/transactionController";
 import { protect, adminOnly } from "../middleware/auth";
 
+import express from "express";
+import {
+  getTransactions,
+  getTransaction,
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+  updateTransactionStatus,
+  getTransactionStats,
+  getTransactionsByProvider,
+} from "../controllers/transactionController";
+import { protect, adminOnly } from "../middleware/auth";
+
 const router = express.Router();
 
-// ============================================================================
-// TRANSACTION ROUTES
-// ============================================================================
-
-// @route   GET /api/transactions/stats
-// @desc    Get transaction statistics
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/transactions/stats:
+ *   get:
+ *     summary: Get transaction statistics (Admin only)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Transaction statistics
+ *       403:
+ *         description: Admin access required
+ */
 router.get("/stats", protect, adminOnly, getTransactionStats);
 
-// @route   GET /api/transactions/provider/:provider
-// @desc    Get transactions by wallet provider
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/transactions/provider/{provider}:
+ *   get:
+ *     summary: Get transactions by wallet provider (Admin only)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: provider
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Transactions for provider
+ *       403:
+ *         description: Admin access required
+ */
 router.get(
   "/provider/:provider",
   protect,
   adminOnly,
-  getTransactionsByProvider
+  getTransactionsByProvider,
 );
 
-// @route   GET /api/transactions
-// @desc    Get all transactions (admin sees all, user sees own)
-// @access  Private
+/**
+ * @swagger
+ * /api/transactions:
+ *   get:
+ *     summary: Get all transactions
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of transactions
+ *       401:
+ *         description: Unauthorized
+ */
 router.get("/", protect, getTransactions);
 
-// @route   GET /api/transactions/:id
-// @desc    Get single transaction by ID (admin sees all, user sees own)
-// @access  Private
+/**
+ * @swagger
+ * /api/transactions/{id}:
+ *   get:
+ *     summary: Get transaction by ID
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Transaction details
+ *       404:
+ *         description: Transaction not found
+ */
 router.get("/:id", protect, getTransaction);
 
-// @route   POST /api/transactions
-// @desc    Create new transaction
-// @access  Public (Anyone can create transactions)
+/**
+ * @swagger
+ * /api/transactions:
+ *   post:
+ *     summary: Create new transaction
+ *     tags: [Transactions]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId: { type: string }
+ *               amount: { type: number }
+ *               type: { type: string, enum: [deposit, withdrawal, bet, win] }
+ *               provider: { type: string }
+ *     responses:
+ *       201:
+ *         description: Transaction created
+ */
 router.post("/", createTransaction);
 
-// @route   PUT /api/transactions/:id
-// @desc    Update transaction
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/transactions/{id}:
+ *   put:
+ *     summary: Update transaction (Admin only)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Transaction updated
+ *       403:
+ *         description: Admin access required
+ */
 router.put("/:id", protect, adminOnly, updateTransaction);
 
-// @route   DELETE /api/transactions/:id
-// @desc    Delete transaction
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/transactions/{id}:
+ *   delete:
+ *     summary: Delete transaction (Admin only)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Transaction deleted
+ *       403:
+ *         description: Admin access required
+ */
 router.delete("/:id", protect, adminOnly, deleteTransaction);
 
-// @route   PATCH /api/transactions/:id/status
-// @desc    Update transaction status
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/transactions/{id}/status:
+ *   patch:
+ *     summary: Update transaction status (Admin only)
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status: { type: string, enum: [pending, completed, failed] }
+ *     responses:
+ *       200:
+ *         description: Status updated
+ *       403:
+ *         description: Admin access required
+ */
 router.patch("/:id/status", protect, adminOnly, updateTransactionStatus);
 
 export default router;

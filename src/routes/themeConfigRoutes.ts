@@ -4,40 +4,110 @@ import {
   updateThemeConfig,
   patchThemeConfig,
   resetThemeConfig,
-  toggleThemeConfig
+  toggleThemeConfig,
+} from "../controllers/themeConfigController";
+import { themeConfigValidation } from "../middleware/themeConfigValidation";
+import { protect, adminOnly } from "../middleware/auth";
+
+import express from "express";
+import {
+  getThemeConfig,
+  updateThemeConfig,
+  patchThemeConfig,
+  resetThemeConfig,
+  toggleThemeConfig,
 } from "../controllers/themeConfigController";
 import { themeConfigValidation } from "../middleware/themeConfigValidation";
 import { protect, adminOnly } from "../middleware/auth";
 
 const router = express.Router();
 
-// ============================================================================
-// THEME CONFIGURATION ROUTES
-// ============================================================================
-
-// @route   GET /api/theme-config
-// @desc    Get theme configuration
-// @access  Public
+/**
+ * @swagger
+ * /api/theme-config:
+ *   get:
+ *     summary: Get theme configuration
+ *     tags: [Theme Config]
+ *     responses:
+ *       200:
+ *         description: Theme configuration
+ */
 router.get("/", getThemeConfig);
 
-// @route   PUT /api/theme-config
-// @desc    Update all theme configuration
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/theme-config:
+ *   put:
+ *     summary: Update theme configuration (Admin only)
+ *     tags: [Theme Config]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Theme configuration updated
+ *       403:
+ *         description: Admin access required
+ */
 router.put("/", protect, adminOnly, themeConfigValidation, updateThemeConfig);
 
-// @route   PATCH /api/theme-config
-// @desc    Partially update theme configuration
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/theme-config:
+ *   patch:
+ *     summary: Partially update theme configuration (Admin only)
+ *     tags: [Theme Config]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Theme configuration updated
+ *       403:
+ *         description: Admin access required
+ */
 router.patch("/", protect, adminOnly, themeConfigValidation, patchThemeConfig);
 
-// @route   POST /api/theme-config/reset
-// @desc    Reset theme configuration to default values
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/theme-config/reset:
+ *   post:
+ *     summary: Reset theme configuration (Admin only)
+ *     tags: [Theme Config]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Theme configuration reset
+ *       403:
+ *         description: Admin access required
+ */
 router.post("/reset", protect, adminOnly, resetThemeConfig);
 
-// @route   PATCH /api/theme-config/toggle
-// @desc    Toggle theme configuration active status
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/theme-config/toggle:
+ *   patch:
+ *     summary: Toggle theme configuration status (Admin only)
+ *     tags: [Theme Config]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Status toggled
+ *       403:
+ *         description: Admin access required
+ */
 router.patch("/toggle", protect, adminOnly, toggleThemeConfig);
 
 export default router;

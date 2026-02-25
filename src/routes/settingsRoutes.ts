@@ -22,103 +22,217 @@ import upload from "../middleware/multer";
 
 const router = express.Router();
 
-// ============================================================================
-// GENERAL SETTINGS ROUTES
-// ============================================================================
-
-// @route   GET /api/settings
-// @desc    Get application settings
-// @access  Public (filtered response for non-admin users)
+/**
+ * @swagger
+ * /api/settings:
+ *   get:
+ *     summary: Get application settings
+ *     tags: [Settings]
+ *     responses:
+ *       200:
+ *         description: Application settings
+ */
 router.get("/", getSettings);
 
-// @route   PUT /api/settings
-// @desc    Update all application settings
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/settings:
+ *   put:
+ *     summary: Update application settings (Admin only)
+ *     tags: [Settings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Settings updated
+ *       403:
+ *         description: Admin access required
+ */
 router.put("/", protect, adminOnly, updateSettingsValidation, updateSettings);
 
-// @route   POST /api/settings/reset
-// @desc    Reset settings to default values
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/settings/reset:
+ *   post:
+ *     summary: Reset settings to default (Admin only)
+ *     tags: [Settings]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Settings reset
+ *       403:
+ *         description: Admin access required
+ */
 router.post("/reset", protect, adminOnly, resetSettings);
 
-// ============================================================================
-// THEME CUSTOMIZATION ROUTES
-// ============================================================================
-
-// @route   PATCH /api/settings/theme
-// @desc    Update theme colors only
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/settings/theme:
+ *   patch:
+ *     summary: Update theme colors (Admin only)
+ *     tags: [Settings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               primaryColor: { type: string }
+ *               secondaryColor: { type: string }
+ *     responses:
+ *       200:
+ *         description: Theme updated
+ *       403:
+ *         description: Admin access required
+ */
 router.patch("/theme", protect, adminOnly, updateThemeValidation, updateTheme);
 
-// ============================================================================
-// ORGANIZATION SETTINGS ROUTES
-// ============================================================================
-
-// @route   PATCH /api/settings/organization
-// @desc    Update organization details (name, logo, contact info)
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/settings/organization:
+ *   patch:
+ *     summary: Update organization details (Admin only)
+ *     tags: [Settings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               logo: { type: string, format: binary }
+ *     responses:
+ *       200:
+ *         description: Organization updated
+ *       403:
+ *         description: Admin access required
+ */
 router.patch(
   "/organization",
   protect,
   adminOnly,
-  upload.single("organizationImage"), // Handle image upload
+  upload.single("organizationImage"),
   updateOrganizationValidation,
-  updateOrganization
+  updateOrganization,
 );
 
-// ============================================================================
-// LANDING PAGE CUSTOMIZATION ROUTES
-// ============================================================================
-
-// @route   PATCH /api/settings/landing-page/header
-// @desc    Update landing page header settings (logo, colors)
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/settings/landing-page/header:
+ *   patch:
+ *     summary: Update landing page header (Admin only)
+ *     tags: [Settings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               headerLogo: { type: string, format: binary }
+ *     responses:
+ *       200:
+ *         description: Header updated
+ *       403:
+ *         description: Admin access required
+ */
 router.patch(
   "/landing-page/header",
   protect,
   adminOnly,
-  upload.single("headerLogo"), // Handle header logo upload
-  updateOrganizationValidation, // Reusing organization validation for logo/image URLs
-  updateLandingPageHeader
+  upload.single("headerLogo"),
+  updateOrganizationValidation,
+  updateLandingPageHeader,
 );
 
-// @route   PATCH /api/settings/landing-page/navigation
-// @desc    Update landing page navigation settings (menu items, fonts)
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/settings/landing-page/navigation:
+ *   patch:
+ *     summary: Update landing page navigation (Admin only)
+ *     tags: [Settings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Navigation updated
+ *       403:
+ *         description: Admin access required
+ */
 router.patch(
   "/landing-page/navigation",
   protect,
   adminOnly,
-  updateUISettingsValidation, // Using UI validation for navigation styling
-  updateNavigationItemsValidation, // Adding navigation items validation
-  updateLandingPageNavigation
+  updateUISettingsValidation,
+  updateNavigationItemsValidation,
+  updateLandingPageNavigation,
 );
 
-// @route   PATCH /api/settings/landing-page/fonts
-// @desc    Update landing page font settings (sizes, families)
-// @access  Private (Admin only)
+/**
+ * @swagger
+ * /api/settings/landing-page/fonts:
+ *   patch:
+ *     summary: Update landing page fonts (Admin only)
+ *     tags: [Settings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Fonts updated
+ *       403:
+ *         description: Admin access required
+ */
 router.patch(
   "/landing-page/fonts",
   protect,
   adminOnly,
-  updateUISettingsValidation, // Using UI validation for font settings
-  updateLandingPageFonts
-);
-
-// ============================================================================
-// GLOBAL UI CUSTOMIZATION ROUTES
-// ============================================================================
-
-// @route   PATCH /api/settings/ui
-// @desc    Update global UI customization settings
-// @access  Public (but should be protected in production)
-router.patch(
-  "/ui",
-  // NOTE: Removed protect and adminOnly middleware for easier testing
-  // In production, you should uncomment the line below:
-  // protect,
   updateUISettingsValidation,
-  updateUISettings
+  updateLandingPageFonts,
 );
+
+/**
+ * @swagger
+ * /api/settings/ui:
+ *   patch:
+ *     summary: Update global UI customization
+ *     tags: [Settings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: UI settings updated
+ */
+router.patch("/ui", updateUISettingsValidation, updateUISettings);
 
 export default router;

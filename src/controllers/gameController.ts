@@ -122,7 +122,9 @@ export const createGame = async (
       return;
     }
 
-    const image = `/uploads/${req.file.filename}`;
+    // Get Cloudinary URL from uploaded file
+    const image =
+      (req.file as any).path || `/uploads/${(req.file as any).filename}`;
 
     const game = await Game.create({
       gameUuid,
@@ -187,7 +189,8 @@ export const updateGame = async (
 
     // Update image if new file is uploaded
     if (req.file) {
-      game.image = `/uploads/${req.file.filename}`;
+      game.image =
+        (req.file as any).path || `/uploads/${(req.file as any).filename}`;
     }
 
     // Verify category exists if provided

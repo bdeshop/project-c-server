@@ -67,7 +67,9 @@ export const createPopularGame = async (
       return;
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
+    // Get Cloudinary URL from uploaded file
+    const imageUrl =
+      (req.file as any).path || `/uploads/${(req.file as any).filename}`;
 
     const game = await PopularGame.create({
       image: imageUrl,
@@ -103,7 +105,8 @@ export const updatePopularGame = async (
     }
 
     if (req.file) {
-      game.image = `/uploads/${req.file.filename}`;
+      game.image =
+        (req.file as any).path || `/uploads/${(req.file as any).filename}`;
     }
     if (title) game.title = title;
     if (redirectUrl) game.redirectUrl = redirectUrl;

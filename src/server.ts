@@ -129,6 +129,52 @@ app.use("/api/popular-games", popularGameRoutes);
 
 // Enhanced static file serving with comprehensive CORS support
 app.use(
+  "/uploads",
+  (req, res, next) => {
+    // Set CORS headers for static files
+    res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+
+    // Set cache headers for better performance
+    res.header("Cache-Control", "public, max-age=31536000"); // 1 year cache
+    res.header("Expires", new Date(Date.now() + 31536000000).toUTCString());
+
+    // Handle preflight requests
+    if (req.method === "OPTIONS") {
+      res.sendStatus(200);
+      return;
+    }
+
+    next();
+  },
+  cors(corsOptions),
+  express.static("upload", {
+    // Additional static file options
+    maxAge: "1y", // Cache for 1 year
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, path) => {
+      // Set content type based on file extension
+      if (path.endsWith(".jpg") || path.endsWith(".jpeg")) {
+        res.setHeader("Content-Type", "image/jpeg");
+      } else if (path.endsWith(".png")) {
+        res.setHeader("Content-Type", "image/png");
+      } else if (path.endsWith(".gif")) {
+        res.setHeader("Content-Type", "image/gif");
+      } else if (path.endsWith(".webp")) {
+        res.setHeader("Content-Type", "image/webp");
+      }
+    },
+  }),
+);
+
+// Also serve from /upload for backward compatibility
+app.use(
   "/upload",
   (req, res, next) => {
     // Set CORS headers for static files

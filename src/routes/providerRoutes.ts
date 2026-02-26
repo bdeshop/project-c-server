@@ -8,7 +8,7 @@ import {
   deleteProvider,
 } from "../controllers/providerController";
 import { protect, authorize } from "../middleware/auth";
-import upload from "../middleware/multer";
+import cloudinaryUpload from "../middleware/cloudinaryUpload";
 
 const router = express.Router();
 
@@ -22,14 +22,14 @@ router.post(
   "/",
   protect,
   authorize("admin"),
-  upload.single("logo"),
+  cloudinaryUpload.single("logo"),
   createProvider,
 );
 router.put(
   "/:id",
   protect,
   authorize("admin"),
-  upload.single("logo"),
+  cloudinaryUpload.single("logo"),
   updateProvider,
 );
 router.delete("/:id", protect, authorize("admin"), deleteProvider);

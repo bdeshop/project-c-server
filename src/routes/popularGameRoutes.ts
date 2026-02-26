@@ -8,7 +8,7 @@ import {
   deletePopularGame,
 } from "../controllers/popularGameController";
 import { protect, authorize } from "../middleware/auth";
-import upload from "../middleware/multer";
+import cloudinaryUpload from "../middleware/cloudinaryUpload";
 
 const router = express.Router();
 
@@ -22,14 +22,14 @@ router.post(
   "/",
   protect,
   authorize("admin"),
-  upload.single("image"),
+  cloudinaryUpload.single("image"),
   createPopularGame,
 );
 router.put(
   "/:id",
   protect,
   authorize("admin"),
-  upload.single("image"),
+  cloudinaryUpload.single("image"),
   updatePopularGame,
 );
 router.delete("/:id", protect, authorize("admin"), deletePopularGame);

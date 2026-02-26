@@ -1,25 +1,34 @@
 import { Request, Response } from "express";
 import Provider from "../models/Provider";
 import Game from "../models/Game";
+import axios from "axios";
 
-// Get all providers (Public)
+const ORACLE_API_URL = "https://api.oraclegames.live/api";
+const ORACLE_API_KEY =
+  process.env.ORACLE_API_KEY || "a8b5ca55-56a5-418d-829d-6d00afd5945f";
+
+// Get all providers from external Oracle API (Public)
 export const getProviders = async (req: Request, res: Response) => {
   try {
-    const providers = await Provider.find({ isActive: true }).sort({
-      createdAt: -1,
+    const response = await axios.get(`${ORACLE_API_URL}/providers`, {
+      headers: {
+        "x-dstgame-key": ORACLE_API_KEY,
+        "Content-Type": "application/json",
+      },
     });
 
     res.status(200).json({
       success: true,
-      count: providers.length,
-      providers,
+      count: response.data.count,
+      providers: response.data.data,
     });
   } catch (error: any) {
+    console.error("Error fetching providers from Oracle API:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Get all providers (Admin)
+// Get all providers (Admin) - from local database
 export const getAllProviders = async (req: Request, res: Response) => {
   try {
     const providers = await Provider.find().sort({ createdAt: -1 });
@@ -34,28 +43,27 @@ export const getAllProviders = async (req: Request, res: Response) => {
   }
 };
 
-// Get single provider (Public)
+// Get single provider from external Oracle API (Public)
 export const getProvider = async (req: Request, res: Response) => {
   try {
-    const provider = await Provider.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!provider) {
-      res.status(404).json({ message: "Provider not found" });
-      return;
-    }
-
-    // Get games for this provider
-    const games = await Game.find({ provider: req.params.id })
-      .populate("category", "nameEnglish nameBangla icon")
-      .sort({ createdAt: -1 });
+    // Fetch provider details from Oracle API
+    const response = await axios.get(`${ORACLE_API_URL}/providers/${id}`, {
+      headers: {
+        "x-dstgame-key": ORACLE_API_KEY,
+        "Content-Type": "application/json",
+      },
+    });
 
     res.status(200).json({
       success: true,
-      provider,
-      games,
-      gameCount: games.length,
+      provider: response.data.provider,
+      games: response.data.games,
+      gameCount: response.data.gameCount,
     });
   } catch (error: any) {
+    console.error("Error fetching provider from Oracle API:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -85,7 +93,9 @@ export const createProvider = async (
       return;
     }
 
-    const logo = `/uploads/${req.file.filename}`;
+    // Get Cloudinary URL from uploaded file
+    const logo =
+      (req.file as any).path || `/uploads/${(req.file as any).filename}`;
 
     const provider = await Provider.create({
       name,
@@ -129,7 +139,8 @@ export const updateProvider = async (
     }
 
     if (req.file) {
-      provider.logo = `/uploads/${req.file.filename}`;
+      provider.logo =
+        (req.file as any).path || `/uploads/${(req.file as any).filename}`;
     }
 
     if (isActive !== undefined) {

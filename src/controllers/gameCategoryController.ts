@@ -49,11 +49,14 @@ export const getGameCategory = async (
 
 // Create game category (Admin only)
 export const createGameCategory = async (
-  req: Request,
+  req: Request & { files?: Record<string, Express.Multer.File[]> },
   res: Response,
 ): Promise<void> => {
   try {
-    const { nameEnglish, nameBangla, displayType, icon, image } = req.body;
+    const { nameEnglish, nameBangla, displayType } = req.body;
+    const files = req.files as
+      | Record<string, Express.Multer.File[]>
+      | undefined;
 
     if (!nameEnglish || !nameBangla) {
       res.status(400).json({
@@ -62,16 +65,25 @@ export const createGameCategory = async (
       return;
     }
 
-    if (!icon) {
+    if (!files?.icon || files.icon.length === 0) {
       res.status(400).json({ message: "Category icon is required" });
       return;
     }
+
+    // Get Cloudinary URLs from uploaded files
+    const icon =
+      (files.icon[0] as any).path ||
+      `/uploads/${(files.icon[0] as any).filename}`;
+    const image = files?.image?.[0]
+      ? (files.image[0] as any).path ||
+        `/uploads/${(files.image[0] as any).filename}`
+      : null;
 
     const category = await GameCategory.create({
       nameEnglish,
       nameBangla,
       icon,
-      image: image || null,
+      image,
       displayType: displayType || "providers",
     });
 
@@ -87,11 +99,14 @@ export const createGameCategory = async (
 
 // Update game category (Admin only)
 export const updateGameCategory = async (
-  req: Request,
+  req: Request & { files?: Record<string, Express.Multer.File[]> },
   res: Response,
 ): Promise<void> => {
   try {
-    const { nameEnglish, nameBangla, displayType, icon, image } = req.body;
+    const { nameEnglish, nameBangla, displayType } = req.body;
+    const files = req.files as
+      | Record<string, Express.Multer.File[]>
+      | undefined;
 
     const category = await GameCategory.findById(req.params.id);
 
@@ -103,8 +118,18 @@ export const updateGameCategory = async (
     if (nameEnglish) category.nameEnglish = nameEnglish;
     if (nameBangla) category.nameBangla = nameBangla;
     if (displayType) category.displayType = displayType;
-    if (icon) category.icon = icon;
-    if (image) category.image = image;
+
+    if (files?.icon && files.icon.length > 0) {
+      category.icon =
+        (files.icon[0] as any).path ||
+        `/uploads/${(files.icon[0] as any).filename}`;
+    }
+
+    if (files?.image && files.image.length > 0) {
+      category.image =
+        (files.image[0] as any).path ||
+        `/uploads/${(files.image[0] as any).filename}`;
+    }
 
     await category.save();
 

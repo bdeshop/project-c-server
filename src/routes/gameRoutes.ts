@@ -5,9 +5,10 @@ import {
   createGame,
   updateGame,
   deleteGame,
+  bulkCreateGames,
 } from "../controllers/gameController";
 import { protect, authorize } from "../middleware/auth";
-import upload from "../middleware/multer";
+import cloudinaryUpload from "../middleware/cloudinaryUpload";
 
 const router = express.Router();
 
@@ -20,14 +21,15 @@ router.post(
   "/",
   protect,
   authorize("admin"),
-  upload.single("image"),
+  cloudinaryUpload.single("image"),
   createGame,
 );
+router.post("/bulk", protect, authorize("admin"), bulkCreateGames);
 router.put(
   "/:id",
   protect,
   authorize("admin"),
-  upload.single("image"),
+  cloudinaryUpload.single("image"),
   updateGame,
 );
 router.delete("/:id", protect, authorize("admin"), deleteGame);

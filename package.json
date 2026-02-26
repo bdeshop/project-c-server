@@ -20,6 +20,7 @@
   "description": "Khela88 - Betting Platform Backend API",
   "dependencies": {
     "@types/multer": "^2.0.0",
+    "axios": "^1.6.0",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",

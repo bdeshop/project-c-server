@@ -7,7 +7,7 @@ import {
   deleteGameCategory,
 } from "../controllers/gameCategoryController";
 import { protect, authorize } from "../middleware/auth";
-import upload from "../middleware/multer";
+import cloudinaryUpload from "../middleware/cloudinaryUpload";
 
 const router = express.Router();
 
@@ -20,14 +20,20 @@ router.post(
   "/",
   protect,
   authorize("admin"),
-  upload.single("image"),
+  cloudinaryUpload.fields([
+    { name: "icon", maxCount: 1 },
+    { name: "image", maxCount: 1 },
+  ]),
   createGameCategory,
 );
 router.put(
   "/:id",
   protect,
   authorize("admin"),
-  upload.single("image"),
+  cloudinaryUpload.fields([
+    { name: "icon", maxCount: 1 },
+    { name: "image", maxCount: 1 },
+  ]),
   updateGameCategory,
 );
 router.delete("/:id", protect, authorize("admin"), deleteGameCategory);

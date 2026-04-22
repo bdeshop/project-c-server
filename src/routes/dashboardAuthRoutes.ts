@@ -7,6 +7,7 @@ import {
   loginValidation,
   dashboardSignupValidation,
 } from "../middleware/validation";
+import { protect } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -58,5 +59,27 @@ router.post("/login", loginValidation, dashboardLogin);
  *         description: Validation error or email already exists
  */
 router.post("/signup", dashboardSignupValidation, dashboardSignup);
+
+/**
+ * @swagger
+ * /api/users/dashboard/verify-token:
+ *   get:
+ *     summary: Verify if token is valid
+ *     tags: [Dashboard Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *       401:
+ *         description: Invalid or expired token
+ */
+router.get("/verify-token", protect, (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Token is valid",
+    user: req.user,
+  });
+});
 
 export default router;

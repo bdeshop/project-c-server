@@ -32,6 +32,9 @@ import gameRoutes from "./routes/gameRoutes";
 import gameCategoryRoutes from "./routes/gameCategoryRoutes";
 import providerRoutes from "./routes/providerRoutes";
 import popularGameRoutes from "./routes/popularGameRoutes";
+import playGameRoutes from "./routes/playGameRoutes";
+import callbackRoutes from "./routes/callbackRoutes";
+import oracleGamesRoutes from "./routes/oracleGamesRoutes";
 import { handleMulterError } from "./middleware/multer";
 
 // Load environment variables
@@ -126,6 +129,9 @@ app.use("/api/games", gameRoutes);
 app.use("/api/game-categories", gameCategoryRoutes);
 app.use("/api/providers", providerRoutes);
 app.use("/api/popular-games", popularGameRoutes);
+app.use("/api/oracle-games", oracleGamesRoutes);
+app.use("/api/playgame", playGameRoutes);
+app.use("/api", callbackRoutes);
 
 // Enhanced static file serving with comprehensive CORS support
 app.use(

@@ -23,11 +23,19 @@ interface DashboardLoginRequest extends Request {
 
 // Generate JWT token
 const generateToken = (userId: string): string => {
-  return jwt.sign(
+  console.log("🔑 GENERATING TOKEN");
+  console.log("User ID:", userId);
+  console.log("JWT Secret configured:", config.jwt.secret ? "Yes" : "No");
+  console.log("JWT Expiry:", config.jwt.expiresIn);
+
+  const token = jwt.sign(
     { id: userId },
     config.jwt.secret as string,
     { expiresIn: config.jwt.expiresIn } as jwt.SignOptions,
   );
+
+  console.log("✅ Token generated successfully");
+  return token;
 };
 
 // Dashboard Login

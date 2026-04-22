@@ -12,10 +12,34 @@ export const getGameCategories = async (
       .populate("providers", "name logo")
       .sort({ createdAt: -1 });
 
+    // Map categories and fix invalid provider logos
+    const mappedCategories = categories.map((category) => {
+      const categoryObj = category.toObject();
+      if (categoryObj.providers && Array.isArray(categoryObj.providers)) {
+        categoryObj.providers = categoryObj.providers.map((provider: any) => {
+          let logo = provider.logo;
+          // If logo is a local path or invalid, use a default Cloudinary placeholder
+          if (
+            !logo ||
+            logo.includes("/uploads/") ||
+            !logo.includes("cloudinary")
+          ) {
+            logo =
+              "https://res.cloudinary.com/dm7xbqgdu/image/upload/v1772085583/khela88/games/default-provider-logo.png";
+          }
+          return {
+            ...provider,
+            logo,
+          };
+        });
+      }
+      return categoryObj;
+    });
+
     res.status(200).json({
       success: true,
-      count: categories.length,
-      categories,
+      count: mappedCategories.length,
+      categories: mappedCategories,
     });
   } catch (error) {
     res.status(500).json({ message: (error as Error).message });
@@ -38,9 +62,30 @@ export const getGameCategory = async (
       return;
     }
 
+    // Fix invalid provider logos
+    const categoryObj = category.toObject();
+    if (categoryObj.providers && Array.isArray(categoryObj.providers)) {
+      categoryObj.providers = categoryObj.providers.map((provider: any) => {
+        let logo = provider.logo;
+        // If logo is a local path or invalid, use a default Cloudinary placeholder
+        if (
+          !logo ||
+          logo.includes("/uploads/") ||
+          !logo.includes("cloudinary")
+        ) {
+          logo =
+            "https://res.cloudinary.com/dm7xbqgdu/image/upload/v1772085583/khela88/games/default-provider-logo.png";
+        }
+        return {
+          ...provider,
+          logo,
+        };
+      });
+    }
+
     res.status(200).json({
       success: true,
-      category,
+      category: categoryObj,
     });
   } catch (error) {
     res.status(500).json({ message: (error as Error).message });

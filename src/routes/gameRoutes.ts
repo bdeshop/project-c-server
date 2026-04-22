@@ -6,6 +6,7 @@ import {
   updateGame,
   deleteGame,
   bulkCreateGames,
+  updateGameNamesFromOracle,
 } from "../controllers/gameController";
 import { protect, authorize } from "../middleware/auth";
 import cloudinaryUpload from "../middleware/cloudinaryUpload";
@@ -24,7 +25,19 @@ router.post(
   cloudinaryUpload.single("image"),
   createGame,
 );
-router.post("/bulk", protect, authorize("admin"), bulkCreateGames);
+router.post(
+  "/bulk",
+  protect,
+  authorize("admin"),
+  cloudinaryUpload.single("providerImage"),
+  bulkCreateGames,
+);
+router.post(
+  "/update-names-from-oracle",
+  protect,
+  authorize("admin"),
+  updateGameNamesFromOracle,
+);
 router.put(
   "/:id",
   protect,
@@ -35,3 +48,4 @@ router.put(
 router.delete("/:id", protect, authorize("admin"), deleteGame);
 
 export default router;
+

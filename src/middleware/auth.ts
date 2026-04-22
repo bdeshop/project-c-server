@@ -22,7 +22,7 @@ interface AuthenticatedRequest extends Request {
 export const optionalProtect = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     let token;
@@ -44,7 +44,7 @@ export const optionalProtect = async (
       // Verify token
       const decoded = jwt.verify(
         token,
-        config.jwt.secret as string
+        config.jwt.secret as string,
       ) as DecodedToken;
 
       // Find user by ID
@@ -73,7 +73,7 @@ export const optionalProtect = async (
 export const protect = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     let token;
@@ -86,7 +86,16 @@ export const protect = async (
       token = req.headers.authorization.split(" ")[1];
     }
 
+    console.log("🔐 AUTH MIDDLEWARE - PROTECT");
+    console.log(
+      "Authorization header:",
+      req.headers.authorization ? "Present" : "Missing",
+    );
+    console.log("Token extracted:", token ? "Yes" : "No");
+    console.log("JWT Secret configured:", config.jwt.secret ? "Yes" : "No");
+
     if (!token) {
+      console.log("❌ No token provided");
       res.status(401).json({
         success: false,
         message: "Access denied. No token provided.",
@@ -96,14 +105,19 @@ export const protect = async (
 
     try {
       // Verify token
+      console.log("🔍 Verifying token...");
       const decoded = jwt.verify(
         token,
-        config.jwt.secret as string
+        config.jwt.secret as string,
       ) as DecodedToken;
+
+      console.log("✅ Token verified successfully");
+      console.log("Decoded user ID:", decoded.id);
 
       // Find user by ID
       const user = await User.findById(decoded.id);
       if (!user) {
+        console.log("❌ User not found in database");
         res.status(401).json({
           success: false,
           message: "Access denied. User not found.",
@@ -112,6 +126,7 @@ export const protect = async (
       }
 
       if (user.status !== "active") {
+        console.log("❌ User account is not active");
         res.status(401).json({
           success: false,
           message: "Access denied. Account is not active.",
@@ -126,8 +141,10 @@ export const protect = async (
         role: user.role,
       };
 
+      console.log("✅ User authenticated:", user.email, "Role:", user.role);
       next();
     } catch (jwtError) {
+      console.log("❌ JWT verification failed:", (jwtError as Error).message);
       res.status(401).json({
         success: false,
         message: "Access denied. Invalid token.",
@@ -147,7 +164,7 @@ export const authorize = (...roles: string[]) => {
   return (
     req: AuthenticatedRequest,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): void => {
     if (!req.user) {
       res.status(401).json({
@@ -173,7 +190,7 @@ export const authorize = (...roles: string[]) => {
 export const adminOnly = (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   if (!req.user) {
     res.status(401).json({

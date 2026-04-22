@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IProvider extends Document {
   name: string;
+  providerCode?: string;
   logo: string;
   isActive: boolean;
   createdAt: Date;
@@ -15,6 +16,10 @@ const providerSchema = new Schema<IProvider>(
       required: [true, "Provider name is required"],
       trim: true,
       unique: true,
+    },
+    providerCode: {
+      type: String,
+      trim: true,
     },
     logo: {
       type: String,
@@ -31,3 +36,4 @@ const providerSchema = new Schema<IProvider>(
 );
 
 export default mongoose.model<IProvider>("Provider", providerSchema);
+

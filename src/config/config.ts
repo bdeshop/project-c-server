@@ -58,7 +58,7 @@ const config: { [key: string]: Config } = {
       },
     },
     jwt: {
-      secret: process.env.JWT_SECRET || "fallback-secret-key",
+      secret: process.env.JWT_SECRET || "khela88-dev-secret-key-2024",
       expiresIn: process.env.JWT_EXPIRE || "7d",
     },
     email: {

@@ -3,6 +3,7 @@ import {
   getProviders,
   getAllProviders,
   getProvider,
+  getProvidersWithCounts,
   createProvider,
   updateProvider,
   deleteProvider,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 // Public routes
 router.get("/", getProviders);
+router.get("/with-counts", getProvidersWithCounts);
 router.get("/:id", getProvider);
 
 // Admin routes

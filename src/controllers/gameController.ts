@@ -6,11 +6,23 @@ import Provider from "../models/Provider";
 // Get all games (Public)
 export const getGames = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { category, provider, type } = req.query;
+    const { category, provider, type, page = 1, limit = 10 } = req.query;
     const filter: any = {};
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limitNum = Math.max(
+      1,
+      Math.min(100, parseInt(limit as string) || 10),
+    );
+    const skip = (pageNum - 1) * limitNum;
 
     console.log("=== GET GAMES START ===");
-    console.log("Query params:", { category, provider, type });
+    console.log("Query params:", {
+      category,
+      provider,
+      type,
+      page: pageNum,
+      limit: limitNum,
+    });
 
     if (category) {
       filter.category = category;
@@ -30,21 +42,98 @@ export const getGames = async (req: Request, res: Response): Promise<void> => {
 
     console.log("Filter:", JSON.stringify(filter));
 
+    const totalCount = await Game.countDocuments(filter);
     const games = await Game.find(filter)
       .populate("category", "nameEnglish nameBangla icon")
-      .populate("provider", "name logo")
-      .sort({ createdAt: -1 });
+      .populate("provider", "name logo providerCode")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
 
-    console.log(`Found ${games.length} games`);
+    const totalPages = Math.ceil(totalCount / limitNum);
+
+    console.log(`Found ${games.length} games out of ${totalCount} total`);
     console.log("=== GET GAMES END ===\n");
 
     res.status(200).json({
       success: true,
       count: games.length,
+      totalCount,
+      page: pageNum,
+      limit: limitNum,
+      totalPages,
       games,
     });
   } catch (error) {
     console.error("GET GAMES ERROR:", error);
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
+
+// Update game names from Oracle API (Admin only)
+export const updateGameNamesFromOracle = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const axios = (await import("axios")).default;
+
+    // Find all games with generated names (nameEnglish starts with "Game ")
+    const gamesToUpdate = await Game.find({
+      nameEnglish: /^Game [0-9a-f]{1,48}$/,
+    });
+
+    console.log(`Found ${gamesToUpdate.length} games to update`);
+
+    let updated = 0;
+    let failed = 0;
+
+    for (const game of gamesToUpdate) {
+      try {
+        if (!game.gameId) {
+          console.log(`Skipping game ${game._id} - no gameId`);
+          failed++;
+          continue;
+        }
+
+        // Fetch game details from Oracle API
+        const response = await axios.get(
+          `https://api.oraclegames.live/api/games/${game.gameId}`,
+          {
+            headers: {
+              "x-dstgame-key":
+                "b4fb7adb955b1078d8d38b54f5ad7be8ded17cfba85c37e4faa729ddd679d379",
+              "x-api-key": "a8b5ca55-56a5-418d-829d-6d00afd5945f",
+            },
+          },
+        );
+
+        const gameDetails = response.data?.data;
+        if (gameDetails?.gameName) {
+          game.nameEnglish = gameDetails.gameName;
+          game.nameBangla = gameDetails.gameName;
+          await game.save();
+          updated++;
+          console.log(
+            `Updated game ${game._id} with name: ${gameDetails.gameName}`,
+          );
+        } else {
+          failed++;
+        }
+      } catch (error) {
+        console.error(`Failed to update game ${game._id}:`, error);
+        failed++;
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Updated ${updated} games, ${failed} failed`,
+      updated,
+      failed,
+    });
+  } catch (error) {
+    console.error("Update games error:", error);
     res.status(500).json({ message: (error as Error).message });
   }
 };
@@ -54,7 +143,7 @@ export const getGame = async (req: Request, res: Response): Promise<void> => {
   try {
     const game = await Game.findById(req.params.id)
       .populate("category", "nameEnglish nameBangla icon")
-      .populate("provider", "name logo");
+      .populate("provider", "name logo providerCode");
 
     if (!game) {
       res.status(404).json({ message: "Game not found" });
@@ -78,6 +167,7 @@ export const createGame = async (
   try {
     const {
       gameUuid,
+      gameId,
       nameEnglish,
       nameBangla,
       category,
@@ -86,8 +176,8 @@ export const createGame = async (
       isLobby,
     } = req.body;
 
-    if (!gameUuid) {
-      res.status(400).json({ message: "Game UUID is required" });
+    if (!gameId && !gameUuid) {
+      res.status(400).json({ message: "Game ID or UUID is required" });
       return;
     }
 
@@ -108,26 +198,12 @@ export const createGame = async (
       return;
     }
 
-    // Check if gameUuid already exists
-    const existingGame = await Game.findOne({ gameUuid });
-    if (existingGame) {
-      res.status(400).json({ message: "Game UUID already exists" });
-      return;
-    }
-
-    // Verify category exists
-    const categoryExists = await GameCategory.findById(category);
-    if (!categoryExists) {
-      res.status(404).json({ message: "Game category not found" });
-      return;
-    }
-
-    // Get Cloudinary URL from uploaded file
-    const image =
-      (req.file as any).path || `/uploads/${(req.file as any).filename}`;
+    // Get image URL (Cloudinary or local)
+    const image = (req.file as any).path || `/uploads/${(req.file as any).filename}`;
 
     const game = await Game.create({
-      gameUuid,
+      gameUuid: gameUuid || gameId,
+      gameId: gameId || gameUuid,
       nameEnglish,
       nameBangla,
       image,
@@ -159,6 +235,7 @@ export const updateGame = async (
   try {
     const {
       gameUuid,
+      gameId,
       nameEnglish,
       nameBangla,
       category,
@@ -173,24 +250,15 @@ export const updateGame = async (
       return;
     }
 
-    // Check if gameUuid is being changed and if it already exists
-    if (gameUuid && gameUuid !== game.gameUuid) {
-      const existingGame = await Game.findOne({ gameUuid });
-      if (existingGame) {
-        res.status(400).json({ message: "Game UUID already exists" });
-        return;
-      }
-      game.gameUuid = gameUuid;
-    }
-
-    // Update game names if provided
+    // Update fields if provided
+    if (gameUuid) game.gameUuid = gameUuid;
+    if (gameId) game.gameId = gameId;
     if (nameEnglish) game.nameEnglish = nameEnglish;
     if (nameBangla) game.nameBangla = nameBangla;
 
     // Update image if new file is uploaded
     if (req.file) {
-      game.image =
-        (req.file as any).path || `/uploads/${(req.file as any).filename}`;
+      game.image = (req.file as any).path || `/uploads/${(req.file as any).filename}`;
     }
 
     // Verify category exists if provided
@@ -203,7 +271,7 @@ export const updateGame = async (
       game.category = category;
     }
 
-    // Update fields if provided
+    // Update flags
     if (isHot !== undefined) game.isHot = isHot === "true" || isHot === true;
     if (isNew !== undefined)
       game.isNewGame = isNew === "true" || isNew === true;
@@ -256,11 +324,17 @@ export const bulkCreateGames = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const { categoryId, providers } = req.body;
+    let categoryId: string;
+    let providers: any[];
 
-    console.log("=== BULK CREATE GAMES START ===");
-    console.log("Category ID:", categoryId);
-    console.log("Providers data:", JSON.stringify(providers, null, 2));
+    if (req.body.data) {
+      const parsedData = JSON.parse(req.body.data);
+      categoryId = parsedData.categoryId;
+      providers = parsedData.providers;
+    } else {
+      categoryId = req.body.categoryId;
+      providers = req.body.providers;
+    }
 
     if (!categoryId) {
       res.status(400).json({ message: "Category ID is required" });
@@ -274,25 +348,18 @@ export const bulkCreateGames = async (
       return;
     }
 
-    // Verify category exists
     const category = await GameCategory.findById(categoryId);
     if (!category) {
       res.status(404).json({ message: "Game category not found" });
       return;
     }
 
-    console.log("Category found:", category.nameEnglish);
+    const createdProviders = [];
+    const errors = [];
 
-    const createdProviders: any[] = [];
-    const errors: any[] = [];
-
-    // Process each provider
     for (const providerData of providers) {
       try {
-        const { name, logo, games } = providerData;
-
-        console.log(`\n--- Processing provider: ${name} ---`);
-        console.log(`Games count: ${games?.length || 0}`);
+        const { name, providerCode, logo, games } = providerData;
 
         if (!name || !games || !Array.isArray(games)) {
           errors.push({
@@ -302,169 +369,138 @@ export const bulkCreateGames = async (
           continue;
         }
 
-        // Create or find provider
         let provider = await Provider.findOne({ name });
+        const logoPath = (req.file as any)?.path || logo;
+
         if (!provider) {
           provider = await Provider.create({
             name,
-            logo: logo || "/uploads/default-logo.png",
+            providerCode: providerCode || "",
+            logo: logoPath || "/uploads/default-logo.png",
             isActive: true,
           });
-          console.log(`Created new provider: ${provider.name}`);
         } else {
-          console.log(`Found existing provider: ${provider.name}`);
+          if (logoPath) {
+            provider.logo = logoPath;
+          }
+          if (providerCode && !provider.providerCode) {
+            provider.providerCode = providerCode;
+          }
+          await provider.save();
         }
 
-        const createdGames: any[] = [];
+        const createdGames = [];
 
-        // Create games for this provider
         for (const gameData of games) {
           try {
             let {
               gameUuid,
               gameId,
+              gameCode,
+              gameName,
+              name: gameName_alt,
               nameEnglish,
               nameBangla,
               image,
+              gameType,
+              jackpot,
+              freeTry,
+              rtp,
               isHot,
               isNew,
               isLobby,
             } = gameData;
 
-            // If gameId is provided but not gameUuid, use gameId as gameUuid
-            if (!gameUuid && gameId) {
-              gameUuid = gameId;
-              console.log(`  - Using gameId as gameUuid: ${gameUuid}`);
-            }
+            if (!gameName && gameName_alt) gameName = gameName_alt;
 
-            console.log(`  - Processing game: ${gameUuid}`);
+            const targetId = gameId || gameUuid;
 
-            if (!gameUuid) {
+            if (!targetId) {
               errors.push({
                 provider: name,
-                error: `Game UUID or gameId is required`,
+                error: "Game ID/UUID is required",
               });
-              console.log(`    ERROR: Game UUID/gameId missing`);
               continue;
             }
 
-            // If names or image are missing, set defaults
-            if (!nameEnglish) {
-              nameEnglish = `Game ${gameUuid}`;
-              console.log(`    Using default nameEnglish: ${nameEnglish}`);
-            }
+            if (!nameEnglish) nameEnglish = gameName || `Game ${targetId}`;
+            if (!nameBangla) nameBangla = gameName || `গেম ${targetId}`;
+            if (!image) image = "/uploads/default-game.png";
 
-            if (!nameBangla) {
-              nameBangla = `গেম ${gameUuid}`;
-              console.log(`    Using default nameBangla: ${nameBangla}`);
-            }
+            const existingGame = await Game.findOne({
+              provider: provider._id,
+              gameId: targetId,
+            });
 
-            if (!image) {
-              image = "/uploads/default-game.png";
-              console.log(`    Using default image: ${image}`);
-            }
-
-            // Check if game already exists
-            const existingGame = await Game.findOne({ gameUuid });
             if (existingGame) {
               errors.push({
                 provider: name,
-                gameUuid,
-                error: "Game UUID already exists",
+                gameId: targetId,
+                error: "Game already exists",
               });
-              console.log(`    ERROR: Game UUID already exists`);
               continue;
             }
 
             const game = await Game.create({
-              gameUuid,
+              gameUuid: gameUuid || targetId,
+              gameId: targetId,
+              gameCode,
+              gameName,
               nameEnglish,
               nameBangla,
               image,
+              gameType,
+              jackpot,
+              freeTry,
+              rtp,
               category: categoryId,
               provider: provider._id,
+              providerCode: provider.providerCode || "",
+              providerName: provider.name,
               isHot: isHot || false,
               isNewGame: isNew || false,
               isLobby: isLobby || false,
             });
 
-            console.log(`    SUCCESS: Created game ${game.gameUuid}`);
-
-            createdGames.push({
-              _id: game._id,
-              gameUuid: game.gameUuid,
-              nameEnglish: game.nameEnglish,
-              nameBangla: game.nameBangla,
-              image: game.image,
-              isHot: game.isHot,
-              isNewGame: game.isNewGame,
-              isLobby: game.isLobby,
-            });
+            createdGames.push(game);
           } catch (gameError) {
-            console.log(
-              `    ERROR creating game: ${(gameError as Error).message}`,
-            );
             errors.push({
               provider: name,
-              gameUuid: gameData.gameUuid || gameData.gameId,
               error: (gameError as Error).message,
             });
           }
         }
 
-        console.log(`Provider ${name} - Created ${createdGames.length} games`);
-
-        // Only add provider if it has games
         if (createdGames.length > 0) {
           createdProviders.push({
-            _id: provider._id,
-            name: provider.name,
-            logo: provider.logo,
+            ...provider.toObject(),
             games: createdGames,
           });
 
-          // Update category's providers array if not already included
-          if (!category.providers.includes(provider._id)) {
-            category.providers.push(provider._id);
-            console.log(`Added provider ${name} to category`);
+          if (!category.providers.includes(provider._id as any)) {
+            category.providers.push(provider._id as any);
           }
         }
       } catch (providerError) {
-        console.log(
-          `ERROR processing provider: ${(providerError as Error).message}`,
-        );
         errors.push({
-          provider: providerData.name || "Unknown",
+          provider: providerData.name,
           error: (providerError as Error).message,
         });
       }
     }
 
-    // Save category with updated providers
     await category.save();
-    console.log("Category saved with providers");
-
-    // Verify games were created
-    const totalGamesInDB = await Game.countDocuments({ category: categoryId });
-    console.log(`\nTotal games in DB for this category: ${totalGamesInDB}`);
-
-    console.log("=== BULK CREATE GAMES END ===\n");
 
     res.status(201).json({
       success: true,
       message: "Bulk game creation completed",
-      category: {
-        _id: category._id,
-        nameEnglish: category.nameEnglish,
-        nameBangla: category.nameBangla,
-      },
+      category,
       providers: createdProviders,
       totalProviders: createdProviders.length,
       totalGames: createdProviders.reduce((sum, p) => sum + p.games.length, 0),
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
-    console.error("BULK CREATE ERROR:", error);
     res.status(500).json({ message: (error as Error).message });
   }
 };

@@ -1,63 +1,52 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IGameSession extends Document {
-  userId: mongoose.Types.ObjectId;
-  originalUsername: string;
-  gameProviderUsername: string;
-  gameProviderAccountId?: string;
-  gameUuid: string;
-  gameCode?: string;
-  providerCode?: string;
+  username: string;
+  provider_code: string;
+  game_code: string;
+  status: "active" | "completed" | "refunded";
+  lastTransactionId?: string;
+  totalBet: number;
+  totalWin: number;
   createdAt: Date;
-  expiresAt: Date;
+  updatedAt: Date;
 }
 
 const gameSessionSchema = new Schema<IGameSession>(
   {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    originalUsername: {
+    username: {
       type: String,
       required: true,
-    },
-    gameProviderUsername: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    gameProviderAccountId: {
-      type: String,
-      required: false,
       index: true,
     },
-    gameUuid: {
+    provider_code: {
       type: String,
       required: true,
     },
-    gameCode: {
+    game_code: {
       type: String,
-      required: false,
+      required: true,
     },
-    providerCode: {
+    status: {
       type: String,
-      required: false,
+      enum: ["active", "completed", "refunded"],
+      default: "active",
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
+    lastTransactionId: {
+      type: String,
     },
-    expiresAt: {
-      type: Date,
-      default: () => new Date(Date.now() + 24 * 60 * 60 * 1000),
-      index: { expireAfterSeconds: 0 },
+    totalBet: {
+      type: Number,
+      default: 0,
+    },
+    totalWin: {
+      type: Number,
+      default: 0,
     },
   },
   {
-    timestamps: false,
-  },
+    timestamps: true,
+  }
 );
 
 export default mongoose.model<IGameSession>("GameSession", gameSessionSchema);

@@ -67,6 +67,29 @@ export const getPaymentMethods = async (req: Request, res: Response) => {
   }
 };
 
+// @desc    Get all active payment methods
+// @route   GET /api/payment-methods/active
+// @access  Public
+export const getActivePaymentMethods = async (req: Request, res: Response) => {
+  try {
+    const paymentMethods = await PaymentMethod.find({ status: "Active" }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      count: paymentMethods.length,
+      data: paymentMethods,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 // @desc    Get single payment method
 // @route   GET /api/payment-methods/:id
 // @access  Public

@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import Transaction from "../models/Transaction";
+import DepositBonus from "../models/DepositBonus";
+import BonusWagering from "../models/BonusWagering";
+import Promotion from "../models/Promotion";
+import User from "../models/User";
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -140,6 +144,8 @@ export const createTransaction = async (
       transaction_type,
       description,
       reference_number,
+      bonusCode,
+      promotionId,
     } = req.body;
 
     // Validate required fields
@@ -161,7 +167,6 @@ export const createTransaction = async (
     }
 
     // Verify user exists
-    const User = require("../models/User").default;
     const user = await User.findById(user_id);
     if (!user) {
       res.status(404).json({
@@ -181,6 +186,62 @@ export const createTransaction = async (
       return;
     }
 
+    // Check for bonus code if provided (DepositBonus system)
+    let depositBonus = null;
+    let calculatedBonusAmount = 0;
+
+    if (bonusCode) {
+      depositBonus = await DepositBonus.findOne({
+        bonusCode,
+        status: "Active",
+        startDate: { $lte: new Date() },
+        endDate: { $gte: new Date() },
+      });
+
+      if (!depositBonus) {
+        res.status(400).json({
+          success: false,
+          message: "Invalid or expired bonus code",
+        });
+        return;
+      }
+
+      // Check minimum deposit requirement
+      if (amount < depositBonus.minimumDepositBDT) {
+        res.status(400).json({
+          success: false,
+          message: `Minimum deposit of ${depositBonus.minimumDepositBDT} BDT required for this bonus`,
+        });
+        return;
+      }
+
+      // Calculate bonus amount
+      calculatedBonusAmount = (amount * depositBonus.percentageValue) / 100;
+
+      // Check if bonus amount meets minimum
+      if (calculatedBonusAmount < depositBonus.minimumBonusBDT) {
+        calculatedBonusAmount = depositBonus.minimumBonusBDT;
+      }
+    } else if (promotionId) {
+      // Handle existing Promotion system
+      const Promotion = require("../models/Promotion").default;
+      const promotion = await Promotion.findById(promotionId);
+
+      if (promotion && promotion.bonus_settings) {
+        const { bonus_type, bonus_value, max_bonus_limit } =
+          promotion.bonus_settings;
+
+        if (bonus_type === "fixed") {
+          calculatedBonusAmount = bonus_value;
+        } else if (bonus_type === "percentage") {
+          calculatedBonusAmount = (amount * bonus_value) / 100;
+          if (max_bonus_limit && calculatedBonusAmount > max_bonus_limit) {
+            calculatedBonusAmount = max_bonus_limit;
+          }
+        }
+      }
+    }
+
     const transaction = await Transaction.create({
       amount,
       wallet_provider,
@@ -191,6 +252,8 @@ export const createTransaction = async (
       transaction_type: transaction_type || "Deposit",
       description,
       reference_number,
+      bonusAmount: calculatedBonusAmount,
+      depositBonusId: depositBonus?._id || null,
     });
 
     // Populate user data in response
@@ -393,10 +456,51 @@ export const updateTransactionStatus = async (
 
         // Update balance based on transaction type
         if (transaction.transaction_type === "Deposit") {
+          // Only add the base deposit amount. Bonus is released upon wagering completion.
           user.balance += amount;
           user.deposit += amount;
+
+          // Create wagering requirement record if bonus was applied
+          if (
+            transaction.depositBonusId &&
+            transaction.bonusAmount &&
+            transaction.bonusAmount > 0
+          ) {
+            const depositBonus = await DepositBonus.findById(
+              transaction.depositBonusId,
+            );
+
+            if (depositBonus && depositBonus.wageringRequirement > 0) {
+              const requiredWageringAmount =
+                transaction.bonusAmount * depositBonus.wageringRequirement;
+              const expiresAt = new Date();
+              expiresAt.setDate(
+                expiresAt.getDate() + depositBonus.validityPeriodDays,
+              );
+
+              await BonusWagering.create({
+                userId: transaction.user_id,
+                depositTransactionId: transaction._id,
+                depositBonusId: transaction.depositBonusId,
+                bonusAmount: transaction.bonusAmount,
+                requiredWageringAmount,
+                currentWageringAmount: 0,
+                wageringProgress: 0,
+                status: "active",
+                expiresAt,
+              });
+
+              console.log(
+                `✅ Bonus wagering created for ${user.email}: ${requiredWageringAmount} BDT required`,
+              );
+            }
+          }
           console.log(
-            `💰 Auto-Deposit: Added ${amount} to ${user.email}. New balance: ${user.balance}`
+            `💰 Auto-Deposit: Added ${amount} (with ${
+              transaction.bonusAmount || 0
+            } bonus pending wagering) to ${user.email}. New balance: ${
+              user.balance
+            }`,
           );
         } else if (transaction.transaction_type === "Withdrawal") {
           // Check if user has sufficient balance

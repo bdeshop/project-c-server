@@ -9,26 +9,24 @@ import {
   getPromotionsByGameType,
   testImageAccess,
   testCloudinaryConnection,
-} from "../controllers/promotionController";
-import { protect, adminOnly } from "../middleware/auth";
-import { uploadPromotionImages } from "../config/cloudinary";
-
-import express from "express";
-import {
-  getPromotions,
-  getPromotion,
-  createPromotion,
-  updatePromotion,
-  deletePromotion,
-  togglePromotionStatus,
-  getPromotionsByGameType,
-  testImageAccess,
-  testCloudinaryConnection,
+  getActiveDepositBonuses,
 } from "../controllers/promotionController";
 import { protect, adminOnly } from "../middleware/auth";
 import { uploadPromotionImages } from "../config/cloudinary";
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /api/promotions/active-bonuses:
+ *   get:
+ *     summary: Get active deposit bonuses
+ *     tags: [Promotions]
+ *     responses:
+ *       200:
+ *         description: List of active deposit bonuses
+ */
+router.get("/active-bonuses", getActiveDepositBonuses);
 
 /**
  * @swagger

@@ -49,6 +49,15 @@ const transactionSchema = new mongoose.Schema(
       required: false,
       trim: true,
     },
+    bonusAmount: {
+      type: Number,
+      default: 0,
+    },
+    depositBonusId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DepositBonus",
+      default: null,
+    },
   },
   {
     timestamps: true,

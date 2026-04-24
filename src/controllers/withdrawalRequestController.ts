@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Transaction from "../models/Transaction";
 import User from "../models/User";
 import WithdrawalMethod from "../models/WithdrawalMethod";
+import BonusWagering from "../models/BonusWagering";
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -44,6 +45,28 @@ export const createWithdrawalRequest = async (
       res.status(400).json({
         success: false,
         message: "Amount must be greater than 0",
+      });
+      return;
+    }
+
+    // Check for active wagering requirements
+    const activeWagering = await BonusWagering.findOne({
+      userId: req.user.id,
+      status: "active",
+    });
+
+    if (activeWagering) {
+      res.status(400).json({
+        success: false,
+        message: `আপনার টার্নওভার সম্পন্ন হয়নি। প্রয়োজনীয়: ৳${activeWagering.requiredWageringAmount}, বর্তমান: ৳${activeWagering.currentWageringAmount}`,
+        enMessage: `You have an active wagering requirement. Required: ৳${activeWagering.requiredWageringAmount}, Current: ৳${activeWagering.currentWageringAmount}`,
+        data: {
+          required: activeWagering.requiredWageringAmount,
+          current: activeWagering.currentWageringAmount,
+          remaining:
+            activeWagering.requiredWageringAmount -
+            activeWagering.currentWageringAmount,
+        },
       });
       return;
     }

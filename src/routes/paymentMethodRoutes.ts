@@ -1,19 +1,7 @@
 import express from "express";
 import {
   getPaymentMethods,
-  getPaymentMethod,
-  createPaymentMethod,
-  updatePaymentMethod,
-  deletePaymentMethod,
-  togglePaymentMethodStatus,
-  testCloudinaryConnection,
-} from "../controllers/paymentMethodController";
-import { protect, adminOnly } from "../middleware/auth";
-import { uploadPaymentMethodImages } from "../config/cloudinary";
-
-import express from "express";
-import {
-  getPaymentMethods,
+  getActivePaymentMethods,
   getPaymentMethod,
   createPaymentMethod,
   updatePaymentMethod,
@@ -53,6 +41,18 @@ router.get("/test-cloudinary", protect, adminOnly, testCloudinaryConnection);
  *         description: List of payment methods
  */
 router.get("/", getPaymentMethods);
+
+/**
+ * @swagger
+ * /api/payment-methods/active:
+ *   get:
+ *     summary: Get active payment methods
+ *     tags: [Payment Methods]
+ *     responses:
+ *       200:
+ *         description: List of active payment methods
+ */
+router.get("/active", getActivePaymentMethods);
 
 /**
  * @swagger

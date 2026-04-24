@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import User from "../models/User";
 import GameSession from "../models/GameSession";
+import BonusWagering from "../models/BonusWagering";
 import axios from "axios";
 
 const router = express.Router();
@@ -154,6 +155,83 @@ router.post("/jaya9-callback", async (req: Request, res: Response) => {
 
     const responseTime = Date.now() - startTime;
     console.log(`✅ Response sent in: ${responseTime}ms`);
+
+    // === Wagering Requirement Tracking (Only on Wins) ===
+    if (bet_type === "SETTLE" && amountFloat > 0) {
+      console.log(`🎯 Checking wagering for win amount: ${amountFloat}`);
+
+      // Find active wagering requirements for this user
+      const activeWagering = await BonusWagering.find({
+        userId: player._id,
+        status: "active",
+        expiresAt: { $gt: new Date() },
+      }).sort({ createdAt: 1 }); // Oldest first
+
+      console.log(`📊 Found ${activeWagering.length} active wagering records`);
+
+      if (activeWagering.length > 0) {
+        let remainingWinAmount = amountFloat;
+
+        for (const wagering of activeWagering) {
+          if (remainingWinAmount <= 0) break;
+
+          const remainingRequired =
+            wagering.requiredWageringAmount - wagering.currentWageringAmount;
+
+          if (remainingRequired > 0) {
+            const amountToApply = Math.min(
+              remainingWinAmount,
+              remainingRequired,
+            );
+
+            wagering.currentWageringAmount += amountToApply;
+            wagering.wageringProgress = Math.min(
+              100,
+              (wagering.currentWageringAmount /
+                wagering.requiredWageringAmount) *
+                100,
+            );
+
+            // Check if completed
+            if (
+              wagering.currentWageringAmount >= wagering.requiredWageringAmount
+            ) {
+              wagering.status = "completed";
+              wagering.completedAt = new Date();
+              console.log(`✅ Wagering completed for user ${player.username}`);
+
+              // Add bonus amount to player's balance
+              const bonusAmount = wagering.bonusAmount;
+              const updatedPlayerBalance = await User.findByIdAndUpdate(
+                player._id,
+                {
+                  $inc: { balance: bonusAmount },
+                },
+                { new: true },
+              );
+
+              console.log(
+                `💰 Bonus Released: +৳${bonusAmount} → ${player.username}`,
+              );
+              console.log(
+                `💰 New Balance: ৳${updatedPlayerBalance?.balance || 0}`,
+              );
+            }
+
+            await wagering.save();
+            remainingWinAmount -= amountToApply;
+
+            console.log(
+              `💰 Wagering Progress: ${wagering.wageringProgress.toFixed(2)}% (${wagering.currentWageringAmount}/${wagering.requiredWageringAmount})`,
+            );
+          }
+        }
+      }
+    } else {
+      console.log(
+        `⏭️  Skipping wagering tracking - bet_type: ${bet_type}, amount: ${amountFloat}`,
+      );
+    }
 
     res.json({
       success: true,

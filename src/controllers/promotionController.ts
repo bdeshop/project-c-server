@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Promotion, { IPromotion } from "../models/Promotion";
+import DepositBonus from "../models/DepositBonus";
 import { deleteCloudinaryImage, extractPublicId } from "../config/cloudinary";
 
 interface AuthenticatedRequest extends Request {
@@ -471,6 +472,37 @@ export const testCloudinaryConnection = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Cloudinary connection failed",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Get active deposit bonuses
+ * @route   GET /api/promotions/active-bonuses
+ * @access  Public
+ */
+export const getActiveDepositBonuses = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const bonuses = await DepositBonus.find({
+      status: "Active",
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() },
+    }).populate("depositMethodId", "method_name_en method_name_bd");
+
+    res.status(200).json({
+      success: true,
+      count: bonuses.length,
+      data: bonuses,
+    });
+  } catch (error: any) {
+    console.error("Error fetching active deposit bonuses:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
       error: error.message,
     });
   }

@@ -11,18 +11,6 @@ import {
 } from "../controllers/transactionController";
 import { protect, adminOnly } from "../middleware/auth";
 
-import express from "express";
-import {
-  getTransactions,
-  getTransaction,
-  createTransaction,
-  updateTransaction,
-  deleteTransaction,
-  updateTransactionStatus,
-  getTransactionStats,
-  getTransactionsByProvider,
-} from "../controllers/transactionController";
-import { protect, adminOnly } from "../middleware/auth";
 
 const router = express.Router();
 

@@ -12,7 +12,7 @@ export const getMyWageringProgress = async (
 ): Promise<void> => {
   try {
     const { status } = req.query;
-    const filter: any = { userId: req.user._id };
+    const filter: any = { userId: req.user.id };
 
     if (status) {
       filter.status = status;
@@ -122,7 +122,7 @@ export const canUserWithdraw = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const now = new Date();
 
     // Get active wagering requirements (must be active AND not expired)

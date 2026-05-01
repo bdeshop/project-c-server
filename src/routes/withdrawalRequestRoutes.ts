@@ -7,14 +7,6 @@ import {
 } from "../controllers/withdrawalRequestController";
 import { protect } from "../middleware/auth";
 
-import express from "express";
-import {
-  createWithdrawalRequest,
-  getUserWithdrawalRequests,
-  getAllWithdrawalRequests,
-  cancelWithdrawalRequest,
-} from "../controllers/withdrawalRequestController";
-import { protect } from "../middleware/auth";
 
 const router = express.Router();
 

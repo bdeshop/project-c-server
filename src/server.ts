@@ -37,6 +37,10 @@ import callbackRoutes from "./routes/callbackRoutes";
 import oracleGamesRoutes from "./routes/oracleGamesRoutes";
 import bonusWageringRoutes from "./routes/bonusWageringRoutes";
 import depositBonusRoutes from "./routes/depositBonusRoutes";
+import frontendAuthRoutes from "./routes/frontendAuth";
+import affiliateRoutes from "./routes/affiliate";
+import affiliateThemeConfigRoutes from "./routes/affiliateThemeConfigRoutes";
+import payoutRoutes from "./routes/payoutRoutes";
 import { handleMulterError } from "./middleware/multer";
 
 // Load environment variables
@@ -135,6 +139,10 @@ app.use("/api/oracle-games", oracleGamesRoutes);
 app.use("/api/playgame", playGameRoutes);
 app.use("/api/bonus-wagering", bonusWageringRoutes);
 app.use("/api/deposit-bonuses", depositBonusRoutes);
+app.use("/api/frontend/auth", frontendAuthRoutes);
+app.use("/api/affiliate", affiliateRoutes);
+app.use("/api/affiliate-theme-config", affiliateThemeConfigRoutes);
+app.use("/api/payout", payoutRoutes);
 app.use("/api", callbackRoutes);
 
 // Enhanced static file serving with comprehensive CORS support

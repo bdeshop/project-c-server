@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
+import Affiliate from "../models/Affiliate";
 import config from "../config/config";
 import { Types } from "mongoose";
 
@@ -10,7 +11,7 @@ interface DecodedToken {
   exp: number;
 }
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
     email: string;
@@ -115,8 +116,21 @@ export const protect = async (
       console.log("Decoded user ID:", decoded.id);
 
       // Find user by ID
-      const user = await User.findById(decoded.id);
+      let user = await User.findById(decoded.id);
+      
       if (!user) {
+        // If not found in User, check in Affiliate
+        const affiliate = await Affiliate.findById(decoded.id);
+        if (affiliate) {
+          req.user = {
+            id: (affiliate._id as Types.ObjectId).toString(),
+            email: affiliate.email,
+            role: affiliate.role,
+          };
+          console.log("✅ Affiliate authenticated:", affiliate.email, "Role:", affiliate.role);
+          return next();
+        }
+
         console.log("❌ User not found in database");
         res.status(401).json({
           success: false,

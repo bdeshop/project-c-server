@@ -74,7 +74,11 @@ const io = new Server(server, {
 connectDB();
 
 // Security middleware
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }),
+);
 
 // CORS configuration with more permissive settings for all routes
 const corsOptions = {

@@ -31,32 +31,29 @@ export const registerAffiliate = async (
     console.log("=== 📝 AFFILIATE REGISTRATION ===");
     console.log("Request Body:", JSON.stringify(req.body, null, 2));
 
-    const {
-      userName,
-      password,
-      fullName,
-      email,
-      phone,
-      callingCode,
-      paymentMethod,
-      paymentDetails,
-      paymentNumber, // Added to handle frontend field
-    } = req.body;
+    const { firstName, lastName, password, email, phone, callingCode } =
+      req.body;
 
-    // Map paymentNumber to paymentDetails if provided
-    let finalPaymentDetails = paymentDetails || {};
-    if (paymentNumber && !finalPaymentDetails.phoneNumber) {
-      finalPaymentDetails.phoneNumber = paymentNumber;
-    }
+    // Combine firstName and lastName
+    const fullName = `${firstName || ""} ${lastName || ""}`.trim();
 
-    // Trim username
-    const trimmedUserName = userName?.trim();
+    // Generate userName from email
+    const trimmedUserName = email?.split("@")[0]?.trim();
 
     // Validate required fields
-    if (!trimmedUserName || !password || !phone || !paymentMethod) {
+    if (!firstName || !lastName || !email || !phone || !password) {
       res.status(400).json({
         success: false,
-        message: "Please provide userName, password, phone, and paymentMethod",
+        message:
+          "Please provide firstName, lastName, email, phone, and password",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
       });
       return;
     }
@@ -95,12 +92,12 @@ export const registerAffiliate = async (
     const affiliate = await Affiliate.create({
       userName: trimmedUserName,
       password,
-      fullName: fullName || "",
-      email: email || "",
+      fullName: fullName,
+      email: email,
       phone,
       callingCode: callingCode || "880",
-      paymentMethod,
-      paymentDetails: finalPaymentDetails,
+      paymentMethod: "Bank Transfer",
+      paymentDetails: {},
       myReferralCode,
       status: "pending", // Requires admin approval
     });
@@ -149,22 +146,22 @@ export const loginAffiliate = async (
     console.log("=== 🔐 AFFILIATE LOGIN REQUEST ===");
     console.log("Request Body:", JSON.stringify(req.body, null, 2));
 
-    const { userName, password } = req.body;
+    const { email, password } = req.body;
 
-    // Trim username
-    const trimmedUserName = userName?.trim();
+    // Trim email
+    const trimmedEmail = email?.trim().toLowerCase();
 
-    if (!trimmedUserName || !password) {
+    if (!trimmedEmail || !password) {
       res.status(400).json({
         success: false,
-        message: "Please provide userName and password",
+        message: "Please provide email and password",
       });
       return;
     }
 
-    console.log(`🔍 Looking for affiliate: "${trimmedUserName}"`);
+    console.log(`🔍 Looking for affiliate: "${trimmedEmail}"`);
     const affiliate = await Affiliate.findOne({
-      userName: trimmedUserName,
+      email: trimmedEmail,
     }).select("+password");
 
     if (!affiliate) {
@@ -178,7 +175,7 @@ export const loginAffiliate = async (
 
     console.log("✅ Affiliate found:", {
       id: affiliate._id,
-      userName: affiliate.userName,
+      email: affiliate.email,
       status: affiliate.status,
       role: affiliate.role,
     });

@@ -83,8 +83,8 @@ const affiliateSchema = new Schema<IAffiliate>(
     },
     paymentMethod: {
       type: String,
-      required: [true, "Please provide a payment method"],
       enum: ["bKash", "Nagad", "Rocket", "Binance", "Bank Transfer"],
+      default: "Bank Transfer",
     },
     paymentDetails: {
       // For Mobile Money (bKash, Nagad, Rocket)

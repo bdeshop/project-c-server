@@ -177,7 +177,7 @@ app.use(
     next();
   },
   cors(corsOptions),
-  express.static("upload", {
+  express.static("uploads", {
     // Additional static file options
     maxAge: "1y", // Cache for 1 year
     etag: true,
@@ -223,7 +223,7 @@ app.use(
     next();
   },
   cors(corsOptions),
-  express.static("upload", {
+  express.static("uploads", {
     // Additional static file options
     maxAge: "1y", // Cache for 1 year
     etag: true,

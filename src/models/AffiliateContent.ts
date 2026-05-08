@@ -47,6 +47,20 @@ export interface ICommissionLevel {
   order: number;
 }
 
+export interface IFooterLink {
+  labelEn: string;
+  labelBn: string;
+  url: string;
+  order: number;
+}
+
+export interface IFooterSocial {
+  platform: string;
+  url: string;
+  icon: string;
+  order: number;
+}
+
 export interface IAffiliateContent extends Document {
   slides: ISlide[];
   bannerText: IBannerText;
@@ -57,6 +71,12 @@ export interface IAffiliateContent extends Document {
   mainTitleBn: string;
   mainDescriptionEn: string;
   mainDescriptionBn: string;
+  footerAboutEn: string;
+  footerAboutBn: string;
+  footerLinks: IFooterLink[];
+  footerSocial: IFooterSocial[];
+  footerCopyrightEn: string;
+  footerCopyrightBn: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -125,6 +145,44 @@ const affiliateContentSchema = new Schema<IAffiliateContent>(
     mainDescriptionBn: {
       type: String,
       default: "আমাদের প্ল্যাটফর্মে যোগ দিয়ে আপনার আয়ের সুযোগ বাড়ান।",
+    },
+
+    footerAboutEn: {
+      type: String,
+      default:
+        "We are Asia's most trusted affiliate network. Join us and increase your earning opportunities.",
+    },
+    footerAboutBn: {
+      type: String,
+      default:
+        "আমরা এশিয়ার সবচেয়ে বিশ্বস্ত এফিলিয়েট নেটওয়ার্ক। আমাদের সাথে যুক্ত হয়ে আপনার আয়ের সুযোগ বাড়ান।",
+    },
+
+    footerLinks: [
+      {
+        labelEn: { type: String, default: "" },
+        labelBn: { type: String, default: "" },
+        url: { type: String, default: "" },
+        order: { type: Number, default: 0 },
+      },
+    ],
+
+    footerSocial: [
+      {
+        platform: { type: String, default: "" },
+        url: { type: String, default: "" },
+        icon: { type: String, default: "" },
+        order: { type: Number, default: 0 },
+      },
+    ],
+
+    footerCopyrightEn: {
+      type: String,
+      default: "Copyright © 2025. All rights reserved",
+    },
+    footerCopyrightBn: {
+      type: String,
+      default: "কপিরাইট © २०२५। সর্বাধিকার সংরক্ষিত",
     },
   },
   { timestamps: true },

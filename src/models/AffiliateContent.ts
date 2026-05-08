@@ -48,27 +48,15 @@ export interface ICommissionLevel {
 }
 
 export interface IAffiliateContent extends Document {
-  // Carousel Slides
   slides: ISlide[];
-
-  // Scrolling Banner
   bannerText: IBannerText;
-
-  // Features Section
   features: IFeature[];
-
-  // Commission Card
   commissionCard: ICommissionCard;
-
-  // Commission Levels
   commissionLevels: ICommissionLevel[];
-
-  // Main Section Title
   mainTitleEn: string;
   mainTitleBn: string;
   mainDescriptionEn: string;
   mainDescriptionBn: string;
-
   createdAt: Date;
   updatedAt: Date;
 }

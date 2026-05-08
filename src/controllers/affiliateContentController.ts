@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import AffiliateContent from "../models/AffiliateContent";
+import fs from "fs";
+import path from "path";
 
 /**
  * @desc    Get affiliate content
@@ -24,51 +26,58 @@ export const getAffiliateContent = async (
             titleEn: "IPL Exclusive",
             titleBn: "IPL এক্সক্লুসিভ",
             subtitleEn: "250% Daily Sports Bonus",
-            subtitleBn: "২৫০% দৈনিক স্পোর্টস বোনাস",
-            image: "/affiliate-bMUt7shc.png",
+            subtitleBn: "२५०% দৈনিক স্পোর্টস বোনাস",
+            image: "/affiliate-default.png",
             order: 1,
-          },
-          {
-            titleEn: "Cricket Bonus",
-            titleBn: "ক্রিকেট বোনাস",
-            subtitleEn: "New Offers Daily",
-            subtitleBn: "প্রতিদিন নতুন অফার",
-            image: "/affiliate-bMUt7shc.png",
-            order: 2,
           },
         ],
         bannerText: {
           textEn:
-            "Join our platform today and enjoy regular bonuses, gambling and special privileges!",
+            "Join our platform today and enjoy regular bonuses and special privileges!",
           textBn:
-            "আজই আমাদের প্ল্যাটফর্মে যোগ দিন এবং নিয়মিত বোনাস, জুয়া এবং বিশেষ সুবিধা উপভোগ করুন!",
+            "আজই আমাদের প্ল্যাটফর্মে যোগ দিন এবং নিয়মিত বোনাস এবং বিশেষ সুবিধা উপভোগ করুন!",
         },
         features: [
           {
-            titleEn: "100% Safe Platform",
-            titleBn: "১০০% নিরাপদ প্ল্যাটফর্ম",
-            descriptionEn: "Our platform is completely safe and secure",
-            descriptionBn: "আমাদের প্ল্যাটফর্ম সম্পূর্ণ নিরাপদ এবং সুরক্ষিত",
+            titleEn: "Easy Commission",
+            titleBn: "সহজ কমিশন",
+            descriptionEn:
+              "Earn commission easily on our platform and increase your income.",
+            descriptionBn:
+              "আমাদের প্ল্যাটফর্মে সহজেই কমিশন অর্জন করুন এবং আপনার আয় বৃদ্ধি করুন।",
             order: 1,
           },
           {
-            titleEn: "Fast Payment Process",
-            titleBn: "দ্রুত পেমেন্ট প্রসেস",
-            descriptionEn: "Get your earnings quickly and safely",
-            descriptionBn: "আপনার আয় দ্রুত এবং নিরাপদে পান",
+            titleEn: "Secure Privacy",
+            titleBn: "নিরাপদ প্রাইভেসি",
+            descriptionEn:
+              "All your information is completely secure and encrypted with us.",
+            descriptionBn:
+              "আপনার সমস্ত তথ্য সম্পূর্ণ সুরক্ষিত এবং এনক্রিপ্টেড থাকে আমাদের সাথে।",
             order: 2,
           },
           {
-            titleEn: "24/7 Customer Service",
-            titleBn: "২৪/৭ গ্রাহক সেবা",
-            descriptionEn: "We are always here for any problem",
-            descriptionBn: "যেকোনো সমস্যার জন্য আমরা সবসময় আছি",
+            titleEn: "Mobile Friendly",
+            titleBn: "মোবাইল ফ্রেন্ডলি",
+            descriptionEn:
+              "Use our platform easily from any device and earn money.",
+            descriptionBn:
+              "যেকোনো ডিভাইস থেকে সহজেই আমাদের প্ল্যাটফর্ম ব্যবহার করুন এবং আয় করুন।",
             order: 3,
+          },
+          {
+            titleEn: "Fast Growth",
+            titleBn: "দ্রুত বৃদ্ধি",
+            descriptionEn:
+              "Your income will grow rapidly through our advanced system and support.",
+            descriptionBn:
+              "আপনার আয় দ্রুত বৃদ্ধি পাবে আমাদের উন্নত সিস্টেম এবং সাপোর্টের মাধ্যমে।",
+            order: 4,
           },
         ],
         commissionCard: {
           percentageEn: "50%",
-          percentageBn: "৫০%",
+          percentageBn: "५०%",
           titleEn: "Commission Offer",
           titleBn: "কমিশন অফার করুন",
           buttonTextEn: "Join Now",
@@ -79,85 +88,81 @@ export const getAffiliateContent = async (
             levelEn: "Level 1",
             levelBn: "লেভেল ১",
             depositEn: "5 - 10 Thousand",
-            depositBn: "৫ - ১০ হাজার",
+            depositBn: "५ - १० हजार",
             commissionEn: "25%",
-            commissionBn: "২৫%",
+            commissionBn: "२५%",
             bonusEn: "5%",
-            bonusBn: "৫%",
-            statusEn: "General Affiliate",
+            bonusBn: "५%",
+            statusEn: "Regular Affiliate",
             statusBn: "সাধারণ এফিলিয়েট",
             dailyBonusEn: "25%",
-            dailyBonusBn: "২৫%",
+            dailyBonusBn: "२५%",
             order: 1,
           },
           {
             levelEn: "Level 2",
-            levelBn: "লেভেল ২",
+            levelBn: "লেভেল २",
             depositEn: "10 - 50 Thousand",
-            depositBn: "১০ - ৫০ হাজার",
+            depositBn: "१० - ५० हजार",
             commissionEn: "35%",
-            commissionBn: "৩৫%",
+            commissionBn: "३५%",
             bonusEn: "5%",
-            bonusBn: "৫%",
+            bonusBn: "५%",
             statusEn: "Dedicated Affiliate",
             statusBn: "নিবেদিত এফিলিয়েট",
             dailyBonusEn: "40%",
-            dailyBonusBn: "৪০%",
+            dailyBonusBn: "४०%",
             order: 2,
           },
           {
             levelEn: "Level 3",
-            levelBn: "লেভেল ৩",
+            levelBn: "লেভেল ३",
             depositEn: "50 - 100 Thousand",
-            depositBn: "৫০ - ১০০ হাজার",
+            depositBn: "५० - १०० हजार",
             commissionEn: "45%",
-            commissionBn: "৪৫%",
+            commissionBn: "४५%",
             bonusEn: "10%",
-            bonusBn: "১০%",
+            bonusBn: "१०%",
             statusEn: "Expert Affiliate",
             statusBn: "দক্ষ এফিলিয়েট",
             dailyBonusEn: "55%",
-            dailyBonusBn: "৫৫%",
+            dailyBonusBn: "५५%",
             order: 3,
           },
           {
             levelEn: "VIP",
             levelBn: "ভিআইপি",
             depositEn: "100+ Thousand",
-            depositBn: "১০০+ হাজার",
+            depositBn: "१००+ हजार",
             commissionEn: "55%",
-            commissionBn: "৫৫%",
+            commissionBn: "५५%",
             bonusEn: "10%",
-            bonusBn: "১০%",
+            bonusBn: "१०%",
             statusEn: "VIP Partnership",
             statusBn: "ভিপি পার্টনারশাপ",
             dailyBonusEn: "60%",
-            dailyBonusBn: "৬০%",
+            dailyBonusBn: "६०%",
             order: 4,
           },
         ],
         mainTitleEn: "Join Today!",
-        mainTitleBn: "আজই এডমিট হন!",
+        mainTitleBn: "আজই যোগ দিন!",
         mainDescriptionEn:
-          "Join our platform and increase your earning opportunities. Easy registration and instant bonus.",
+          "Join our platform and increase your earning opportunities.",
         mainDescriptionBn:
-          "আমাদের প্ল্যাটফর্মে যোগ দিয়ে আপনার আয়ের সুযোগ বাড়ান। সহজ রেজিস্ট্রেশন এবং তাৎক্ষণিক বোনাস পান।",
+          "আমাদের প্ল্যাটফর্মে যোগ দিয়ে আপনার আয়ের সুযোগ বাড়ান।",
       });
     }
 
-    console.log("✅ Affiliate content fetched successfully");
-
     res.status(200).json({
       success: true,
-      message: "Affiliate content retrieved successfully",
       data: content,
     });
   } catch (error) {
     console.error("❌ Error fetching affiliate content:", error);
     res.status(500).json({
       success: false,
-      message: "Error fetching affiliate content",
-      error: (error as Error).message,
+      message: "Failed to fetch affiliate content",
     });
   }
 };
@@ -165,15 +170,14 @@ export const getAffiliateContent = async (
 /**
  * @desc    Update affiliate content
  * @route   PUT /api/affiliate-content
- * @access  Admin
+ * @access  Private/Admin
  */
 export const updateAffiliateContent = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    console.log("📝 Updating affiliate content");
-    console.log("Request Body:", JSON.stringify(req.body, null, 2));
+    console.log("✏️ Updating affiliate content");
 
     let content = await AffiliateContent.findOne();
 
@@ -181,8 +185,7 @@ export const updateAffiliateContent = async (
       content = new AffiliateContent();
     }
 
-    // Update fields if provided
-    if (req.body.slides) content.slides = req.body.slides;
+    // Update fields
     if (req.body.bannerText) content.bannerText = req.body.bannerText;
     if (req.body.features) content.features = req.body.features;
     if (req.body.commissionCard)
@@ -198,8 +201,6 @@ export const updateAffiliateContent = async (
 
     await content.save();
 
-    console.log("✅ Affiliate content updated successfully");
-
     res.status(200).json({
       success: true,
       message: "Affiliate content updated successfully",
@@ -209,45 +210,28 @@ export const updateAffiliateContent = async (
     console.error("❌ Error updating affiliate content:", error);
     res.status(500).json({
       success: false,
-      message: "Error updating affiliate content",
-      error: (error as Error).message,
+      message: "Failed to update affiliate content",
     });
   }
 };
 
 /**
- * @desc    Add a slide with image upload
+ * @desc    Add a new slide
  * @route   POST /api/affiliate-content/slides
- * @access  Admin
+ * @access  Private/Admin
  */
 export const addSlide = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log("➕ Adding new slide");
+
     const { titleEn, titleBn, subtitleEn, subtitleBn } = req.body;
-    const file = (req as any).file;
-
-    if (!titleEn || !titleBn || !subtitleEn || !subtitleBn) {
-      res.status(400).json({
-        success: false,
-        message: "Please provide all required fields",
-      });
-      return;
-    }
-
-    if (!file) {
-      res.status(400).json({
-        success: false,
-        message: "Please upload an image",
-      });
-      return;
-    }
 
     let content = await AffiliateContent.findOne();
     if (!content) {
       content = new AffiliateContent();
     }
 
-    // Generate image path
-    const imagePath = `/uploads/${file.filename}`;
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : "";
 
     const newSlide = {
       titleEn,
@@ -261,8 +245,6 @@ export const addSlide = async (req: Request, res: Response): Promise<void> => {
     content.slides.push(newSlide);
     await content.save();
 
-    console.log("✅ Slide added successfully");
-
     res.status(201).json({
       success: true,
       message: "Slide added successfully",
@@ -272,8 +254,7 @@ export const addSlide = async (req: Request, res: Response): Promise<void> => {
     console.error("❌ Error adding slide:", error);
     res.status(500).json({
       success: false,
-      message: "Error adding slide",
-      error: (error as Error).message,
+      message: "Failed to add slide",
     });
   }
 };
@@ -281,18 +262,29 @@ export const addSlide = async (req: Request, res: Response): Promise<void> => {
 /**
  * @desc    Update a slide
  * @route   PUT /api/affiliate-content/slides/:index
- * @access  Admin
+ * @access  Private/Admin
  */
 export const updateSlide = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
+    console.log("✏️ Updating slide");
+
     const { index } = req.params;
-    const slideIndex = parseInt(index);
+    const { titleEn, titleBn, subtitleEn, subtitleBn } = req.body;
 
     let content = await AffiliateContent.findOne();
-    if (!content || !content.slides[slideIndex]) {
+    if (!content) {
+      res.status(404).json({
+        success: false,
+        message: "Content not found",
+      });
+      return;
+    }
+
+    const slideIndex = parseInt(index);
+    if (slideIndex < 0 || slideIndex >= content.slides.length) {
       res.status(404).json({
         success: false,
         message: "Slide not found",
@@ -300,20 +292,28 @@ export const updateSlide = async (
       return;
     }
 
-    const { titleEn, titleBn, subtitleEn, subtitleBn } = req.body;
-    const file = (req as any).file;
-
+    // Update slide fields
     if (titleEn) content.slides[slideIndex].titleEn = titleEn;
     if (titleBn) content.slides[slideIndex].titleBn = titleBn;
     if (subtitleEn) content.slides[slideIndex].subtitleEn = subtitleEn;
     if (subtitleBn) content.slides[slideIndex].subtitleBn = subtitleBn;
-    if (file) {
-      content.slides[slideIndex].image = `/uploads/${file.filename}`;
+
+    // Update image if provided
+    if (req.file) {
+      // Delete old image if exists
+      if (content.slides[slideIndex].image) {
+        const oldImagePath = path.join(
+          process.cwd(),
+          content.slides[slideIndex].image,
+        );
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      content.slides[slideIndex].image = `/uploads/${req.file.filename}`;
     }
 
     await content.save();
-
-    console.log("✅ Slide updated successfully");
 
     res.status(200).json({
       success: true,
@@ -324,8 +324,7 @@ export const updateSlide = async (
     console.error("❌ Error updating slide:", error);
     res.status(500).json({
       success: false,
-      message: "Error updating slide",
-      error: (error as Error).message,
+      message: "Failed to update slide",
     });
   }
 };
@@ -333,18 +332,28 @@ export const updateSlide = async (
 /**
  * @desc    Delete a slide
  * @route   DELETE /api/affiliate-content/slides/:index
- * @access  Admin
+ * @access  Private/Admin
  */
 export const deleteSlide = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
+    console.log("🗑️ Deleting slide");
+
     const { index } = req.params;
-    const slideIndex = parseInt(index);
 
     let content = await AffiliateContent.findOne();
-    if (!content || !content.slides[slideIndex]) {
+    if (!content) {
+      res.status(404).json({
+        success: false,
+        message: "Content not found",
+      });
+      return;
+    }
+
+    const slideIndex = parseInt(index);
+    if (slideIndex < 0 || slideIndex >= content.slides.length) {
       res.status(404).json({
         success: false,
         message: "Slide not found",
@@ -352,10 +361,19 @@ export const deleteSlide = async (
       return;
     }
 
+    // Delete image file
+    if (content.slides[slideIndex].image) {
+      const imagePath = path.join(
+        process.cwd(),
+        content.slides[slideIndex].image,
+      );
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
     content.slides.splice(slideIndex, 1);
     await content.save();
-
-    console.log("✅ Slide deleted successfully");
 
     res.status(200).json({
       success: true,
@@ -366,8 +384,7 @@ export const deleteSlide = async (
     console.error("❌ Error deleting slide:", error);
     res.status(500).json({
       success: false,
-      message: "Error deleting slide",
-      error: (error as Error).message,
+      message: "Failed to delete slide",
     });
   }
 };

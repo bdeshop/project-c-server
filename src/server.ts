@@ -40,6 +40,7 @@ import depositBonusRoutes from "./routes/depositBonusRoutes";
 import frontendAuthRoutes from "./routes/frontendAuth";
 import affiliateRoutes from "./routes/affiliate";
 import affiliateThemeConfigRoutes from "./routes/affiliateThemeConfigRoutes";
+import affiliateContentRoutes from "./routes/affiliateContentRoutes";
 import payoutRoutes from "./routes/payoutRoutes";
 import { handleMulterError } from "./middleware/multer";
 
@@ -146,6 +147,7 @@ app.use("/api/deposit-bonuses", depositBonusRoutes);
 app.use("/api/frontend/auth", frontendAuthRoutes);
 app.use("/api/affiliate", affiliateRoutes);
 app.use("/api/affiliate-theme-config", affiliateThemeConfigRoutes);
+app.use("/api/affiliate-content", affiliateContentRoutes);
 app.use("/api/payout", payoutRoutes);
 app.use("/api", callbackRoutes);
 

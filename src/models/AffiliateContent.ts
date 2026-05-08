@@ -31,6 +31,22 @@ export interface ICommissionCard {
   buttonTextBn: string;
 }
 
+export interface ICommissionLevel {
+  levelEn: string;
+  levelBn: string;
+  depositEn: string;
+  depositBn: string;
+  commissionEn: string;
+  commissionBn: string;
+  bonusEn: string;
+  bonusBn: string;
+  statusEn: string;
+  statusBn: string;
+  dailyBonusEn: string;
+  dailyBonusBn: string;
+  order: number;
+}
+
 export interface IAffiliateContent extends Document {
   // Carousel Slides
   slides: ISlide[];
@@ -43,6 +59,9 @@ export interface IAffiliateContent extends Document {
 
   // Commission Card
   commissionCard: ICommissionCard;
+
+  // Commission Levels
+  commissionLevels: ICommissionLevel[];
 
   // Main Section Title
   mainTitleEn: string;
@@ -90,6 +109,24 @@ const affiliateContentSchema = new Schema<IAffiliateContent>(
       buttonTextEn: { type: String, default: "Join Now" },
       buttonTextBn: { type: String, default: "এখনই যোগ দিন" },
     },
+
+    commissionLevels: [
+      {
+        levelEn: { type: String, default: "" },
+        levelBn: { type: String, default: "" },
+        depositEn: { type: String, default: "" },
+        depositBn: { type: String, default: "" },
+        commissionEn: { type: String, default: "" },
+        commissionBn: { type: String, default: "" },
+        bonusEn: { type: String, default: "" },
+        bonusBn: { type: String, default: "" },
+        statusEn: { type: String, default: "" },
+        statusBn: { type: String, default: "" },
+        dailyBonusEn: { type: String, default: "" },
+        dailyBonusBn: { type: String, default: "" },
+        order: { type: Number, default: 0 },
+      },
+    ],
 
     mainTitleEn: { type: String, default: "Join Today!" },
     mainTitleBn: { type: String, default: "আজই এডমিট হন!" },

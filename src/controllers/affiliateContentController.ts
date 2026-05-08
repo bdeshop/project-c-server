@@ -74,6 +74,68 @@ export const getAffiliateContent = async (
           buttonTextEn: "Join Now",
           buttonTextBn: "এখনই যোগ দিন",
         },
+        commissionLevels: [
+          {
+            levelEn: "Level 1",
+            levelBn: "লেভেল ১",
+            depositEn: "5 - 10 Thousand",
+            depositBn: "৫ - ১০ হাজার",
+            commissionEn: "25%",
+            commissionBn: "২৫%",
+            bonusEn: "5%",
+            bonusBn: "৫%",
+            statusEn: "General Affiliate",
+            statusBn: "সাধারণ এফিলিয়েট",
+            dailyBonusEn: "25%",
+            dailyBonusBn: "২৫%",
+            order: 1,
+          },
+          {
+            levelEn: "Level 2",
+            levelBn: "লেভেল ২",
+            depositEn: "10 - 50 Thousand",
+            depositBn: "১০ - ৫০ হাজার",
+            commissionEn: "35%",
+            commissionBn: "৩৫%",
+            bonusEn: "5%",
+            bonusBn: "৫%",
+            statusEn: "Dedicated Affiliate",
+            statusBn: "নিবেদিত এফিলিয়েট",
+            dailyBonusEn: "40%",
+            dailyBonusBn: "৪০%",
+            order: 2,
+          },
+          {
+            levelEn: "Level 3",
+            levelBn: "লেভেল ৩",
+            depositEn: "50 - 100 Thousand",
+            depositBn: "৫০ - ১০০ হাজার",
+            commissionEn: "45%",
+            commissionBn: "৪৫%",
+            bonusEn: "10%",
+            bonusBn: "১০%",
+            statusEn: "Expert Affiliate",
+            statusBn: "দক্ষ এফিলিয়েট",
+            dailyBonusEn: "55%",
+            dailyBonusBn: "৫৫%",
+            order: 3,
+          },
+          {
+            levelEn: "VIP",
+            levelBn: "ভিআইপি",
+            depositEn: "100+ Thousand",
+            depositBn: "১০০+ হাজার",
+            commissionEn: "55%",
+            commissionBn: "৫৫%",
+            bonusEn: "10%",
+            bonusBn: "১০%",
+            statusEn: "VIP Partnership",
+            statusBn: "ভিপি পার্টনারশাপ",
+            dailyBonusEn: "60%",
+            dailyBonusBn: "৬০%",
+            order: 4,
+          },
+        ],
         mainTitleEn: "Join Today!",
         mainTitleBn: "আজই এডমিট হন!",
         mainDescriptionEn:
@@ -125,6 +187,8 @@ export const updateAffiliateContent = async (
     if (req.body.features) content.features = req.body.features;
     if (req.body.commissionCard)
       content.commissionCard = req.body.commissionCard;
+    if (req.body.commissionLevels)
+      content.commissionLevels = req.body.commissionLevels;
     if (req.body.mainTitleEn) content.mainTitleEn = req.body.mainTitleEn;
     if (req.body.mainTitleBn) content.mainTitleBn = req.body.mainTitleBn;
     if (req.body.mainDescriptionEn)

@@ -42,6 +42,7 @@ import affiliateRoutes from "./routes/affiliate";
 import affiliateThemeConfigRoutes from "./routes/affiliateThemeConfigRoutes";
 import affiliateContentRoutes from "./routes/affiliateContentRoutes";
 import payoutRoutes from "./routes/payoutRoutes";
+import referralRewardRoutes from "./routes/referralRewardRoutes";
 import { handleMulterError } from "./middleware/multer";
 
 // Load environment variables
@@ -148,6 +149,7 @@ app.use("/api/frontend/auth", frontendAuthRoutes);
 app.use("/api/affiliate", affiliateRoutes);
 app.use("/api/affiliate-theme-config", affiliateThemeConfigRoutes);
 app.use("/api/affiliate-content", affiliateContentRoutes);
+app.use("/api/referrals", referralRewardRoutes);
 app.use("/api/payout", payoutRoutes);
 app.use("/api", callbackRoutes);
 

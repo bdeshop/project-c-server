@@ -31,8 +31,15 @@ export const registerAffiliate = async (
     console.log("=== 📝 AFFILIATE REGISTRATION ===");
     console.log("Request Body:", JSON.stringify(req.body, null, 2));
 
-    const { firstName, lastName, password, email, phone, callingCode } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      password,
+      email,
+      phone,
+      callingCode,
+      referralCode,
+    } = req.body;
 
     // Combine firstName and lastName
     const fullName = `${firstName || ""} ${lastName || ""}`.trim();
@@ -106,6 +113,7 @@ export const registerAffiliate = async (
       id: affiliate._id,
       userName: affiliate.userName,
       status: affiliate.status,
+      referralCode: referralCode || "none",
     });
 
     res.status(201).json({
@@ -207,7 +215,7 @@ export const loginAffiliate = async (
       return;
     }
 
-    const token = signToken(affiliate._id.toString());
+    const token = signToken((affiliate._id as any).toString());
 
     console.log("✅ Affiliate login successful!");
 
@@ -215,7 +223,7 @@ export const loginAffiliate = async (
       success: true,
       token,
       affiliate: {
-        id: affiliate._id,
+        id: (affiliate._id as any).toString(),
         userName: affiliate.userName,
         fullName: affiliate.fullName,
         email: affiliate.email,

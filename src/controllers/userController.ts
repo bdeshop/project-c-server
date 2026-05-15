@@ -112,7 +112,7 @@ const generateToken = (userId: string): string => {
   return jwt.sign(
     { id: userId },
     config.jwt.secret as string,
-    { expiresIn: config.jwt.expiresIn } as jwt.SignOptions
+    { expiresIn: config.jwt.expiresIn } as jwt.SignOptions,
   );
 };
 
@@ -128,7 +128,7 @@ const generatePlayerId = (): string => {
 // @access  Public
 export const signup = async (
   req: SignupRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     // Check for validation errors
@@ -208,7 +208,7 @@ export const signup = async (
         });
         console.log(
           "🔍 Referrer found:",
-          referrer ? `${referrer.name} (${referrer.email})` : "None"
+          referrer ? `${referrer.name} (${referrer.email})` : "None",
         );
 
         if (referrer) {
@@ -226,10 +226,10 @@ export const signup = async (
               referrer.individualReferralSettings.referralDepositBonus || 0; // What new user gets on deposit
             console.log(`💰 Using individual settings from ${referrer.name}:`);
             console.log(
-              `  - Referrer gets signup bonus: ${referrerSignupBonus}`
+              `  - Referrer gets signup bonus: ${referrerSignupBonus}`,
             );
             console.log(
-              `  - New user will get deposit bonus: ${newUserDepositBonus}`
+              `  - New user will get deposit bonus: ${newUserDepositBonus}`,
             );
           } else {
             // Use global settings
@@ -238,10 +238,10 @@ export const signup = async (
             newUserDepositBonus = settings?.referralDepositBonus || 0;
             console.log(`💰 Using global settings:`);
             console.log(
-              `  - Referrer gets signup bonus: ${referrerSignupBonus}`
+              `  - Referrer gets signup bonus: ${referrerSignupBonus}`,
             );
             console.log(
-              `  - New user will get deposit bonus: ${newUserDepositBonus}`
+              `  - New user will get deposit bonus: ${newUserDepositBonus}`,
             );
           }
 
@@ -274,15 +274,15 @@ export const signup = async (
           await user.save();
 
           console.log(
-            `✅ Referral processed: ${referrer.name} referred ${user.name}`
+            `✅ Referral processed: ${referrer.name} referred ${user.name}`,
           );
           console.log(
-            `📊 Referrer now has ${referrer.referredUsers.length} referred users`
+            `📊 Referrer now has ${referrer.referredUsers.length} referred users`,
           );
           console.log(`💵 Referrer earnings: ${referrer.referralEarnings}`);
         } else {
           console.log(
-            `❌ Invalid referral code provided: ${referralCodeToUse}`
+            `❌ Invalid referral code provided: ${referralCodeToUse}`,
           );
         }
       } catch (referralError) {
@@ -337,7 +337,7 @@ export const signup = async (
 
 export const login = async (
   req: LoginRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     // Check for validation errors
@@ -403,12 +403,12 @@ export const login = async (
         await user.save();
 
         console.log(
-          `✅ Auto-generated referral code for user ${user.email}: ${referralCode}`
+          `✅ Auto-generated referral code for user ${user.email}: ${referralCode}`,
         );
       } catch (referralError) {
         console.error(
           "❌ Error generating referral code during login:",
-          referralError
+          referralError,
         );
         // Continue with login even if referral code generation fails
         referralCode = null;
@@ -455,7 +455,7 @@ export const login = async (
           referrerCode: referrer.referralCode,
         };
         console.log(
-          `✅ Using individual referral settings from referrer: ${referrer.name}`
+          `✅ Using individual referral settings from referrer: ${referrer.name}`,
         );
       } else if (referrer) {
         // Referrer exists but uses global settings
@@ -519,7 +519,7 @@ export const login = async (
 // @access  Private
 export const getProfile = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     if (!req.user) {
@@ -579,7 +579,7 @@ export const getProfile = async (
 // @access  Private (Admin only recommended)
 export const getAllUsers = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     console.log("📋 Get all users request received:", {
@@ -720,7 +720,7 @@ export const getAllUsers = async (
         usersWithReferrers: users.filter((user: any) => user.referrerInfo)
           .length,
         usersWithoutReferrers: users.filter(
-          (user: any) => !user.referrerInfo && !user.referredBy
+          (user: any) => !user.referrerInfo && !user.referredBy,
         ).length,
       };
 
@@ -780,7 +780,7 @@ export const getAllUsers = async (
 // @access  Private
 export const getUserById = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -795,7 +795,7 @@ export const getUserById = async (
     }
 
     const user = await User.findById(id).select(
-      "-password -emailVerifyOTP -phoneNumberOTP"
+      "-password -emailVerifyOTP -phoneNumberOTP",
     );
 
     if (!user) {
@@ -827,7 +827,7 @@ export const getUserById = async (
 // @access  Private
 export const updateUser = async (
   req: UpdateUserRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -876,7 +876,7 @@ export const updateUser = async (
     const user = await User.findByIdAndUpdate(
       id,
       { $set: updates },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password -emailVerifyOTP -phoneNumberOTP");
 
     if (!user) {
@@ -922,7 +922,7 @@ export const updateUser = async (
 // @access  Private (Admin only recommended)
 export const deleteUser = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -982,7 +982,7 @@ export const deleteUser = async (
 // @access  Private
 export const updateProfileWithImage = async (
   req: UpdateProfileWithImageRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     if (!req.user) {
@@ -1037,7 +1037,7 @@ export const updateProfileWithImage = async (
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { $set: updates },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password -emailVerifyOTP -phoneNumberOTP");
 
     if (!user) {
@@ -1083,7 +1083,7 @@ export const updateProfileWithImage = async (
 // @access  Private
 export const changePassword = async (
   req: ChangePasswordRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -1156,7 +1156,7 @@ export const changePassword = async (
 // @access  Private
 export const getUserBalance = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     if (!req.user) {
@@ -1168,7 +1168,7 @@ export const getUserBalance = async (
     }
 
     const user = await User.findById(req.user.id).select(
-      "balance deposit withdraw"
+      "balance deposit withdraw",
     );
 
     if (!user) {
@@ -1205,7 +1205,7 @@ export const getUserBalance = async (
 // @access  Private (Admin only)
 export const updateUserBalance = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     // Check if user is admin
@@ -1251,7 +1251,7 @@ export const updateUserBalance = async (
       user.balance += amount;
       user.deposit += amount;
       console.log(
-        `💰 Deposit: Added ${amount} to ${user.email}. New balance: ${user.balance}`
+        `💰 Deposit: Added ${amount} to ${user.email}. New balance: ${user.balance}`,
       );
     } else if (type === "withdraw") {
       // Check if user has sufficient balance
@@ -1269,7 +1269,7 @@ export const updateUserBalance = async (
       user.balance -= amount;
       user.withdraw += amount;
       console.log(
-        `💸 Withdraw: Deducted ${amount} from ${user.email}. New balance: ${user.balance}`
+        `💸 Withdraw: Deducted ${amount} from ${user.email}. New balance: ${user.balance}`,
       );
     }
 
@@ -1291,6 +1291,70 @@ export const updateUserBalance = async (
     });
   } catch (error: any) {
     console.error("Update user balance error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+// @desc    Get current logged-in user
+// @route   GET /api/frontend/auth/me
+// @access  Private
+export const getCurrentUser = async (
+  req: AuthenticatedRequest,
+  res: Response,
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "Not authenticated",
+      });
+      return;
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        country: user.country,
+        currency: user.currency,
+        phoneNumber: user.phoneNumber,
+        phoneNumberVerified: user.phoneNumberVerified,
+        isVerified: user.isVerified,
+        emailVerified: user.emailVerified,
+        status: user.status,
+        balance: user.balance,
+        deposit: user.deposit,
+        withdraw: user.withdraw,
+        bonusSelection: user.bonusSelection,
+        birthday: user.birthday,
+        role: user.role,
+        profileImage: user.profileImage,
+        referralCode: user.referralCode,
+        referredBy: user.referredBy,
+        referralEarnings: user.referralEarnings,
+        totalReferrals: user.referredUsers?.length || 0,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error: any) {
+    console.error("Get current user error:", error);
     res.status(500).json({
       success: false,
       message: "Server error",
